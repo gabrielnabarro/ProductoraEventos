@@ -17,5 +17,6 @@ namespace Domain.Entities
 
         // Propiedad de navegación
         public Sector? Sector { get; set; }
+        public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
     }
 }
