@@ -15,12 +15,12 @@ namespace Api.Infraestructure.Data
         {
         }
 
-        public DbSet<Event> Events { get; set; }
-        public DbSet<Sector> Sectors { get; set; }
-        public DbSet<Seat> Seats { get; set; }
-        public DbSet<User> Users { get; set; }
-        public DbSet<Reservation> Reservations { get; set; }
-        public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<Event> Event { get; set; }
+        public DbSet<Sector> Sector { get; set; }
+        public DbSet<Seat> Seat { get; set; }
+        public DbSet<User> User { get; set; }
+        public DbSet<Reservation> Reservation { get; set; }
+        public DbSet<AuditLog> AuditLog { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
