@@ -15,7 +15,6 @@ namespace Domain.Entities
         public string Status { get; set; } = "Available"; // Available, Reserved, Sold
         public int Version { get; set; } // Para control de concurrencia
 
-        // Propiedad de navegación
         public Sector? Sector { get; set; }
     }
 }

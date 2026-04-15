@@ -15,7 +15,6 @@ namespace Domain.Entities
         public DateTime ReservedAt { get; set; }
         public DateTime ExpiresAt { get; set; }
 
-        // Propiedades de navegación
         public User? User { get; set; }
         public Seat? Seat { get; set; }
     }
