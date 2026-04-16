@@ -8,7 +8,7 @@ namespace Domain.Entities
 {
     public class AuditLog
     {
-        public Guid Id { get; set; } 
+        public Guid Id { get; set; }
         public int? UserId { get; set; } // Puede ser nulo si es un proceso de sistema
         public string Action { get; set; } = string.Empty; // Ej: RESERVE_ATTEMPT, RESERVE_SUCCESS, EXPIRED
         public string EntityType { get; set; } = string.Empty; // Ej: Reservation, Seat

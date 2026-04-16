@@ -16,5 +16,6 @@ namespace Domain.Entities
         public int Version { get; set; } // Para control de concurrencia
 
         public Sector? Sector { get; set; }
+        public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
     }
 }
