@@ -14,10 +14,7 @@ namespace Domain.Entities
         public decimal Price { get; set; }
         public int Capacity { get; set; }
 
-        // Propiedades de navegación
         public Event? Event { get; set; }
-
-        // El sector contiene una colección de asientos disponibles
         public ICollection<Seat> Seats { get; set; } = new List<Seat>();
     }
 }
