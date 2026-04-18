@@ -14,7 +14,6 @@ namespace Infraestructure.Persistence
         public ApiDBContext(DbContextOptions<ApiDBContext> options) : base(options)
         {
         }
-
         public DbSet<Event> Event { get; set; }
         public DbSet<Sector> Sector { get; set; }
         public DbSet<Seat> Seat { get; set; }

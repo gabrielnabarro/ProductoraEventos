@@ -14,6 +14,17 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApiDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Registro de Repositorios
+builder.Services.AddScoped<Application.Interfaces.IEventRepository, Infraestructure.Repositories.EventRepository>();
+builder.Services.AddScoped<Application.Interfaces.IReservationRepository, Infraestructure.Repositories.ReservationRepository>();
+
+// Registro de Handlers (Events)
+builder.Services.AddScoped<Application.UseCases.Events.Handlers.GetEventsHandler>();
+builder.Services.AddScoped<Application.UseCases.Events.Handlers.GetSectorsByEventHandler>();
+builder.Services.AddScoped<Application.UseCases.Events.Handlers.GetSeatsBySectorHandler>();
+
+// Registro de Handlers (Reservations)
+builder.Services.AddScoped<Application.UseCases.Reservations.Handlers.CreateReservationHandler>();
 
 var app = builder.Build();
 
