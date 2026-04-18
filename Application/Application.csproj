@@ -15,4 +15,25 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UseCases\Events\Commands\" />
+    <Folder Include="UseCases\AuditLogs\" />
+    <Folder Include="UseCases\Reservations\Commands\" />
+    <Folder Include="UseCases\Reservations\Handlers\" />
+    <Folder Include="UseCases\Reservations\Queries\" />
+    <Folder Include="UseCases\Seats\Commands\" />
+    <Folder Include="UseCases\Seats\Handlers\" />
+    <Folder Include="UseCases\Seats\Queries\" />
+    <Folder Include="UseCases\Sectors\Commands\" />
+    <Folder Include="UseCases\Sectors\Handlers\" />
+    <Folder Include="UseCases\Sectors\Queries\" />
+    <Folder Include="UseCases\Users\Commands\" />
+    <Folder Include="UseCases\Users\Handlers\" />
+    <Folder Include="UseCases\Users\Queries\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+  </ItemGroup>
+
 </Project>

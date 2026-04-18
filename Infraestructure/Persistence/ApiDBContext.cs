@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Domain.Entities;
 
-namespace Api.Infraestructure.Data
+namespace Infraestructure.Persistence
 {
     public class ApiDBContext: DbContext
     {

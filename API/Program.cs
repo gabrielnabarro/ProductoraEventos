@@ -1,5 +1,5 @@
-using Api.Infraestructure.Data;
-using Api.Infrastructure.Data;
+using Infraestructure.Persistence;
+using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

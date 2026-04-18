@@ -1,7 +1,7 @@
-﻿using Api.Infraestructure.Data;
+﻿using Infraestructure.Persistence;
 using Domain.Entities;
 
-namespace Api.Infrastructure.Data
+namespace Infrastructure.Persistence
 {
     public static class ApiDbInitializer
     {
