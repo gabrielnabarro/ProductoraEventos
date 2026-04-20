@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Domain.Entities;
 
-namespace Application.Interfaces
+namespace Application.Interfaces;
+
+public interface IEventRepository
 {
-    public interface IEventRepository
-    {
-        Task<IEnumerable<Event>> GetActiveEventsAsync();
-        Task<IEnumerable<Sector>> GetSectorsByEventAsync(int eventId);
-        Task<IEnumerable<Seat>> GetSeatsBySectorAsync(int sectorId);
-    }
+    Task<(IReadOnlyCollection<Event> Events, int TotalCount)> GetActiveEventsPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<Event?> GetByIdAsync(int eventId, CancellationToken cancellationToken = default);
+    Task<Event?> GetSeatMapByEventIdAsync(int eventId, CancellationToken cancellationToken = default);
 }
