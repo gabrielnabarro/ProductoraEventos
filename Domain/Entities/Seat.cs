@@ -1,4 +1,5 @@
 using Domain.Constants;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Entities
 {
@@ -9,6 +10,7 @@ namespace Domain.Entities
         public string RowIdentifier { get; set; } = string.Empty;
         public int SeatNumber { get; set; }
         public string Status { get; set; } = SeatStatuses.Available;
+
         public int Version { get; set; }
 
         public Sector? Sector { get; set; }

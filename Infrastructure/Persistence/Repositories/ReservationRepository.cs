@@ -15,6 +15,6 @@ public sealed class ReservationRepository : IReservationRepository
 
     public async Task AddAsync(Reservation reservation, CancellationToken cancellationToken = default)
     {
-        await _context.Reservation.AddAsync(reservation, cancellationToken);
+        await _context.RESERVATION.AddAsync(reservation, cancellationToken);
     }
 }

@@ -17,7 +17,7 @@ public sealed class EventRepository : IEventRepository
 
     public async Task<(IReadOnlyCollection<Event> Events, int TotalCount)> GetActiveEventsPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var query = _context.Event
+        var query = _context.EVENT
             .AsNoTracking()
             .Where(eventEntity => eventEntity.Status == EventStatuses.Active)
             .OrderBy(eventEntity => eventEntity.EventDate)
@@ -34,14 +34,14 @@ public sealed class EventRepository : IEventRepository
 
     public Task<Event?> GetByIdAsync(int eventId, CancellationToken cancellationToken = default)
     {
-        return _context.Event
+        return _context.EVENT
             .AsNoTracking()
             .FirstOrDefaultAsync(eventEntity => eventEntity.Id == eventId, cancellationToken);
     }
 
     public Task<Event?> GetSeatMapByEventIdAsync(int eventId, CancellationToken cancellationToken = default)
     {
-        return _context.Event
+        return _context.EVENT
             .AsNoTracking()
             .Include(eventEntity => eventEntity.Sectors.OrderBy(sector => sector.Id))
             .ThenInclude(sector => sector.Seats.OrderBy(seat => seat.RowIdentifier).ThenBy(seat => seat.SeatNumber))

@@ -7,10 +7,10 @@ public static class AppDbInitializer
 {
     public static void Initialize(AppDbContext context)
     {
-        var hasEvents = context.Event.Any();
-        var hasSectors = context.Sector.Any();
-        var hasSeats = context.Seat.Any();
-        var hasUsers = context.User.Any();
+        var hasEvents = context.EVENT.Any();
+        var hasSectors = context.SECTOR.Any();
+        var hasSeats = context.SEAT.Any();
+        var hasUsers = context.USER.Any();
 
         if (hasEvents && hasSectors && hasSeats && hasUsers)
         {
@@ -76,8 +76,8 @@ public static class AppDbInitializer
                 PasswordHash = "seed-demo-user"
             };
 
-            context.Event.Add(eventEntity);
-            context.User.Add(demoUser);
+            context.EVENT.Add(eventEntity);
+            context.USER.Add(demoUser);
             context.SaveChanges();
             transaction.Commit();
         }

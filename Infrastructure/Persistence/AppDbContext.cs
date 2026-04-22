@@ -10,12 +10,12 @@ public sealed class AppDbContext : DbContext
     {
     }
 
-    public DbSet<Event> Event => Set<Event>();
-    public DbSet<Sector> Sector => Set<Sector>();
-    public DbSet<Seat> Seat => Set<Seat>();
-    public DbSet<User> User => Set<User>();
-    public DbSet<Reservation> Reservation => Set<Reservation>();
-    public DbSet<AuditLog> AuditLog => Set<AuditLog>();
+    public DbSet<Event> EVENT => Set<Event>();
+    public DbSet<Sector> SECTOR => Set<Sector>();
+    public DbSet<Seat> SEAT => Set<Seat>();
+    public DbSet<User> USER => Set<User>();
+    public DbSet<Reservation> RESERVATION => Set<Reservation>();
+    public DbSet<AuditLog> AUDIT_LOG => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

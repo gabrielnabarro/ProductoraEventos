@@ -15,6 +15,6 @@ public sealed class UserRepository : IUserRepository
 
     public Task<bool> ExistsAsync(int userId, CancellationToken cancellationToken = default)
     {
-        return _context.User.AnyAsync(user => user.Id == userId, cancellationToken);
+        return _context.USER.AnyAsync(user => user.Id == userId, cancellationToken);
     }
 }

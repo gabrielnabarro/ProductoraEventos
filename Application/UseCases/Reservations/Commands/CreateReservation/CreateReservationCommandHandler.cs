@@ -92,7 +92,7 @@ public sealed class CreateReservationCommandHandler : ICreateReservationCommandH
         try
         {
             seat.Reserve();
-
+            seat.Version++;
             var reservationTimestamp = DateTime.UtcNow;
             var reservation = new Reservation
             {
