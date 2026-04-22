@@ -52,14 +52,8 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        try
-        {
-            await _context.SaveChangesAsync(cancellationToken);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
 
-            throw new DomainException("Conflicto de concurrencia: La butaca fue reservada por otro usuario en este mismo instante.", HttpStatusCode.Conflict); //statusCode = 409
-        }
+            await _context.SaveChangesAsync(cancellationToken);
+      
     }
 }
