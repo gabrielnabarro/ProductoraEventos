@@ -20,12 +20,12 @@ builder.Services.AddControllers()
             var errors = context.ModelState
                 .Values
                 .SelectMany(modelState => modelState.Errors)
-                .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage) ? "The request is invalid." : error.ErrorMessage)
+                .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage) ? "La solicitud es invalida." : error.ErrorMessage)
                 .ToArray();
 
             var response = new ErrorResponseDto
             {
-                Message = errors.Length == 0 ? "The request is invalid." : string.Join(" ", errors),
+                Message = errors.Length == 0 ? "La solicitud es invalida." : string.Join(" ", errors),
                 StatusCode = StatusCodes.Status400BadRequest,
                 Timestamp = DateTime.UtcNow
             };
@@ -36,8 +36,10 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(defaultConnection));
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<ISeatRepository, SeatRepository>();
@@ -66,7 +68,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Failed to initialize the database.");
+        logger.LogError(ex, "No se pudo inicializar la base de datos.");
     }
 }
 

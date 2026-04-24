@@ -1,7 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces;
 using Domain.Exceptions;
-using System.Net;
 
 namespace Application.UseCases.Events.Queries.GetEventSeatMap;
 
@@ -20,7 +19,7 @@ public sealed class GetEventSeatMapQueryHandler : IGetEventSeatMapQueryHandler
 
         if (eventEntity is null)
         {
-            throw new DomainException("Event not found.", HttpStatusCode.NotFound);
+            throw new NotFoundException("Evento no encontrado.");
         }
 
         return new EventSeatMapResponseDto

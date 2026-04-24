@@ -21,14 +21,26 @@ public sealed class ExceptionMiddleware
         {
             await _next(context);
         }
+        catch (ValidationException exception)
+        {
+            await WriteErrorAsync(context, StatusCodes.Status400BadRequest, exception.Message);
+        }
+        catch (NotFoundException exception)
+        {
+            await WriteErrorAsync(context, StatusCodes.Status404NotFound, exception.Message);
+        }
+        catch (ConflictException exception)
+        {
+            await WriteErrorAsync(context, StatusCodes.Status409Conflict, exception.Message);
+        }
         catch (DomainException exception)
         {
-            await WriteErrorAsync(context, (int)exception.StatusCode, exception.Message);
+            await WriteErrorAsync(context, StatusCodes.Status400BadRequest, exception.Message);
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Unhandled exception while processing request.");
-            await WriteErrorAsync(context, (int)HttpStatusCode.InternalServerError, "An unexpected error occurred.");
+            _logger.LogError(exception, "Ocurrio una excepcion no controlada mientras se procesaba la solicitud.");
+            await WriteErrorAsync(context, (int)HttpStatusCode.InternalServerError, "Ocurrio un error inesperado.");
         }
     }
 

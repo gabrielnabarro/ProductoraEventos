@@ -25,7 +25,7 @@ namespace Domain.Entities
         {
             if (!IsAvailable())
             {
-                throw new InvalidOperationException("Seat is not available for reservation.");
+                throw new InvalidOperationException("La butaca no esta disponible para reservar.");
             }
 
             Status = SeatStatuses.Reserved;

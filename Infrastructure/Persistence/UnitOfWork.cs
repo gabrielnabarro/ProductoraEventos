@@ -1,8 +1,5 @@
 using Application.Interfaces;
-using Domain.Exceptions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using System.Net;
 
 namespace Infrastructure.Persistence;
 
@@ -52,8 +49,6 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-
-            await _context.SaveChangesAsync(cancellationToken);
-      
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

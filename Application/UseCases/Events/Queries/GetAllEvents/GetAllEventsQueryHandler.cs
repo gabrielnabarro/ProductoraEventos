@@ -18,12 +18,12 @@ public sealed class GetAllEventsQueryHandler : IGetAllEventsQueryHandler
     {
         if (query.Page < 1)
         {
-            throw new DomainException("The page number must be greater than zero.");
+            throw new ValidationException("El numero de pagina debe ser mayor a cero.");
         }
 
         if (query.PageSize < 1 || query.PageSize > MaxPageSize)
         {
-            throw new DomainException($"The page size must be between 1 and {MaxPageSize}.");
+            throw new ValidationException($"El tamano de pagina debe estar entre 1 y {MaxPageSize}.");
         }
 
         var (events, totalCount) = await _eventRepository.GetActiveEventsPagedAsync(query.Page, query.PageSize, cancellationToken);

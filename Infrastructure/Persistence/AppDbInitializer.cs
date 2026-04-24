@@ -19,7 +19,7 @@ public static class AppDbInitializer
 
         if (hasEvents || hasSectors || hasSeats || hasUsers)
         {
-            throw new InvalidOperationException("Database contains partial seed data. Clean the database before initializing again.");
+            throw new InvalidOperationException("La base de datos contiene datos parciales de precarga. Limpiarla antes de inicializar nuevamente.");
         }
 
         using var transaction = context.Database.BeginTransaction();
