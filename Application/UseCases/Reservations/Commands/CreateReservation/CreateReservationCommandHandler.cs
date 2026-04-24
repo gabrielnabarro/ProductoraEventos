@@ -1,0 +1,150 @@
+using Application.DTOs;
+using Application.Interfaces;
+using Domain.Constants;
+using Domain.Entities;
+using Domain.Exceptions;
+
+namespace Application.UseCases.Reservations.Commands.CreateReservation;
+
+public sealed class CreateReservationCommandHandler : ICreateReservationCommandHandler
+{
+    private readonly IUserRepository _userRepository;
+    private readonly ISeatRepository _seatRepository;
+    private readonly IReservationRepository _reservationRepository;
+    private readonly IAuditLogRepository _auditLogRepository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public CreateReservationCommandHandler(
+        IUserRepository userRepository,
+        ISeatRepository seatRepository,
+        IReservationRepository reservationRepository,
+        IAuditLogRepository auditLogRepository,
+        IUnitOfWork unitOfWork)
+    {
+        _userRepository = userRepository;
+        _seatRepository = seatRepository;
+        _reservationRepository = reservationRepository;
+        _auditLogRepository = auditLogRepository;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<ReservationResponseDto> Handle(CreateReservationCommand command, CancellationToken cancellationToken = default)
+    {
+        if (command.SeatId == Guid.Empty)
+        {
+            throw new ValidationException("El identificador de la butaca es obligatorio.");
+        }
+
+        if (command.UserId <= 0)
+        {
+            throw new ValidationException("El identificador del usuario debe ser mayor a cero.");
+        }
+
+        var attemptTimestamp = DateTime.UtcNow;
+        var userExists = await _userRepository.ExistsAsync(command.UserId, cancellationToken);
+
+        await _auditLogRepository.AddAsync(
+            BuildAuditLog(
+                userExists ? command.UserId : null,
+                command.SeatId,
+                AuditLogActions.ReserveAttempt,
+                BuildAttemptDetails(command.UserId, userExists),
+                attemptTimestamp),
+            cancellationToken);
+
+        if (!userExists)
+        {
+            await _auditLogRepository.AddAsync(
+                BuildAuditLog(null, command.SeatId, AuditLogActions.ReserveRejected, $"Usuario {command.UserId} no encontrado.", DateTime.UtcNow),
+                cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            throw new NotFoundException("Usuario no encontrado.");
+        }
+
+        var seat = await _seatRepository.GetByIdAsync(command.SeatId, cancellationToken);
+
+        if (seat is null)
+        {
+            await _auditLogRepository.AddAsync(
+                BuildAuditLog(command.UserId, command.SeatId, AuditLogActions.ReserveRejected, "Butaca no encontrada.", DateTime.UtcNow),
+                cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            throw new NotFoundException("Butaca no encontrada.");
+        }
+
+        if (!seat.IsAvailable())
+        {
+            await _auditLogRepository.AddAsync(
+                BuildAuditLog(command.UserId, command.SeatId, AuditLogActions.ReserveRejected, $"El estado de la butaca es {seat.Status}.", DateTime.UtcNow),
+                cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            throw new ConflictException("La butaca ya no esta disponible.");
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        try
+        {
+            seat.Reserve();
+            var reservationTimestamp = DateTime.UtcNow;
+            var reservation = new Reservation
+            {
+                Id = Guid.NewGuid(),
+                SeatId = seat.Id,
+                UserId = command.UserId,
+                Status = ReservationStatuses.Reserved,
+                ReservedAt = reservationTimestamp,
+                ExpiresAt = reservationTimestamp.AddMinutes(5)
+            };
+
+            await _reservationRepository.AddAsync(reservation, cancellationToken);
+            await _auditLogRepository.AddAsync(
+                BuildAuditLog(command.UserId, command.SeatId, AuditLogActions.ReserveSuccess, "La butaca fue reservada correctamente.", DateTime.UtcNow),
+                cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            return new ReservationResponseDto
+            {
+                ReservationId = reservation.Id,
+                SeatId = reservation.SeatId,
+                UserId = reservation.UserId,
+                SeatStatus = seat.Status,
+                ReservedAt = reservation.ReservedAt,
+                ExpiresAt = reservation.ExpiresAt,
+                Message = "Reserva creada correctamente."
+            };
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    private static string BuildAttemptDetails(int userId, bool userExists)
+    {
+        return userExists
+            ? "Se solicito la reserva de la butaca."
+            : $"Se solicito la reserva de la butaca por el usuario desconocido {userId}.";
+    }
+
+    private static AuditLog BuildAuditLog(int? userId, Guid seatId, string action, string details, DateTime timestamp)
+    {
+        return new AuditLog
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Action = action,
+            EntityType = AuditLogEntityTypes.Seat,
+            EntityId = seatId.ToString(),
+            Details = details,
+            CreatedAt = timestamp
+        };
+    }
+}

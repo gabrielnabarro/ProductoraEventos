@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Domain.Constants;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Entities
 {
@@ -12,10 +9,26 @@ namespace Domain.Entities
         public int SectorId { get; set; }
         public string RowIdentifier { get; set; } = string.Empty;
         public int SeatNumber { get; set; }
-        public string Status { get; set; } = "Available"; // Available, Reserved, Sold
-        public int Version { get; set; } // Para control de concurrencia
+        public string Status { get; set; } = SeatStatuses.Available;
+
+        public int Version { get; set; }
 
         public Sector? Sector { get; set; }
         public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+
+        public bool IsAvailable()
+        {
+            return string.Equals(Status, SeatStatuses.Available, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public void Reserve()
+        {
+            if (!IsAvailable())
+            {
+                throw new InvalidOperationException("La butaca no esta disponible para reservar.");
+            }
+
+            Status = SeatStatuses.Reserved;
+        }
     }
 }
