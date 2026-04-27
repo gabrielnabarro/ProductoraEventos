@@ -33,6 +33,10 @@ public sealed class ExceptionMiddleware
         {
             await WriteErrorAsync(context, StatusCodes.Status409Conflict, exception.Message);
         }
+        catch (UnauthorizedException exception)
+        {
+            await WriteErrorAsync(context, StatusCodes.Status401Unauthorized, exception.Message);
+        }
         catch (DomainException exception)
         {
             await WriteErrorAsync(context, StatusCodes.Status400BadRequest, exception.Message);

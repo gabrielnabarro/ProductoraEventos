@@ -1,11 +1,16 @@
+using Application.UseCases.Audits.Queries.GetAllAudits;
+using Application.UseCases.Auth.Commands.Login;
+using Application.UseCases.Auth.Commands.Register;
 using Application.DTOs;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repositories;
+using Infrastructure.Security;
 using Application.Interfaces;
 using Application.UseCases.Events.Queries.GetAllEvents;
 using Application.UseCases.Events.Queries.GetEventById;
 using Application.UseCases.Events.Queries.GetEventSeatMap;
 using Application.UseCases.Reservations.Commands.CreateReservation;
+using Application.UseCases.Reservations.Queries.GetUserReservations;
 using EventsApi.Middlewares;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -47,11 +52,20 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IPasswordHasher, Sha256PasswordHasher>();
 
 builder.Services.AddScoped<IGetAllEventsQueryHandler, GetAllEventsQueryHandler>();
+builder.Services.AddScoped<IGetAllAuditsQueryHandler, GetAllAuditsQueryHandler>();
 builder.Services.AddScoped<IGetEventByIdQueryHandler, GetEventByIdQueryHandler>();
 builder.Services.AddScoped<IGetEventSeatMapQueryHandler, GetEventSeatMapQueryHandler>();
+builder.Services.AddScoped<ReservationSelectionPolicy>();
+builder.Services.AddScoped<ReservationAuditLogFactory>();
+builder.Services.AddScoped<ReservationMessageFactory>();
+builder.Services.AddScoped<ReservationResponseFactory>();
 builder.Services.AddScoped<ICreateReservationCommandHandler, CreateReservationCommandHandler>();
+builder.Services.AddScoped<IGetUserReservationsQueryHandler, GetUserReservationsQueryHandler>();
+builder.Services.AddScoped<IRegisterCommandHandler, RegisterCommandHandler>();
+builder.Services.AddScoped<ILoginCommandHandler, LoginCommandHandler>();
 
 var app = builder.Build();
 
@@ -62,8 +76,9 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
+        var passwordHasher = services.GetRequiredService<IPasswordHasher>();
         context.Database.Migrate();
-        AppDbInitializer.Initialize(context);
+        AppDbInitializer.Initialize(context, passwordHasher);
     }
     catch (Exception ex)
     {
@@ -78,6 +93,9 @@ app.UseSwaggerUI();
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.UseAuthorization();
 

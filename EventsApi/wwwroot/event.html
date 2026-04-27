@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ticketix | Detalle del evento</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body class="ticketix-page">
+    <section class="section">
+        <div class="container is-fluid">
+            <header class="box topbar mb-5">
+                <div class="topbar-brand">
+                    <p class="title is-4 mb-0"><span class="icon has-text-primary mr-2"><i class="fa-solid fa-ticket"></i></span>Ticketix</p>
+                    <aside class="menu topbar-menu" aria-label="Navegacion principal">
+                        <ul class="menu-list">
+                            <li><a class="topbar-link is-active" href="/"><span class="icon" aria-hidden="true"><i class="fa-solid fa-arrow-left"></i></span><span>Volver a la cartelera</span></a></li>
+                        </ul>
+                    </aside>
+                </div>
+                <div class="topbar-actions">
+                    <div class="auth-nav" data-auth-nav></div>
+                </div>
+            </header>
+
+            <section class="detail-page-main">
+                <h1 id="detail-title" class="title is-3 mb-0" hidden>Cargando evento...</h1>
+
+                <div id="detail-feedback" class="notification is-danger is-light is-hidden mb-5" role="status" aria-live="polite"></div>
+
+                <div class="columns is-variable is-5 detail-content">
+                    <div class="column is-8-desktop">
+                        <div class="box">
+                            <h2 class="title is-4 has-text-weight-bold mb-4">Mapa visual de butacas</h2>
+                            <div class="tags mb-5">
+                                <span class="tag is-success is-light is-medium"><span class="icon"><i class="fa-solid fa-circle-check"></i></span><span>Disponible</span></span>
+                                <span class="tag is-warning is-light is-medium"><span class="icon"><i class="fa-solid fa-hourglass-half"></i></span><span>Reservado</span></span>
+                                <span class="tag is-light is-medium"><span class="icon"><i class="fa-solid fa-ban"></i></span><span>Vendido</span></span>
+                            </div>
+                            <div id="seat-map" class="seats-grid" aria-live="polite"></div>
+                        </div>
+                    </div>
+
+                    <aside class="column is-4-desktop">
+                        <div class="box detail-sidebar sidebar-sticky">
+                            <h2 class="detail-sidebar-title">Detalle del evento</h2>
+                            <div id="event-summary" class="mt-4 mb-4">
+                                <div class="detail-panel">
+                                    <p class="panel-kicker">Cargando</p>
+                                    <p class="panel-copy mb-0">Preparando el detalle del evento...</p>
+                                </div>
+                            </div>
+                            <div id="selected-seat-summary" class="detail-panel detail-panel-selection mb-4" aria-live="polite">
+                                <p class="panel-kicker">Tu reserva</p>
+                                <p class="panel-copy mb-0">Selecciona una butaca disponible para continuar al pago.</p>
+                            </div>
+                            <button id="payment-button" class="button is-primary is-fullwidth detail-pay-button" type="button" aria-label="Continuar al pago" disabled>Continuar al pago</button>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <div id="reserve-confirm-modal" class="modal" aria-hidden="true">
+        <div class="modal-background" data-close-modal="true"></div>
+        <div class="modal-card reserve-modal-card" role="dialog" aria-modal="true" aria-labelledby="reserve-confirm-title">
+            <section class="reserve-modal-body">
+                <p id="reserve-confirm-kicker" class="panel-kicker">Confirmar reserva</p>
+                <h2 id="reserve-confirm-title" class="panel-title">Reservar butaca</h2>
+                <p id="reserve-confirm-text" class="panel-copy mb-0">Confirma la butaca que quieres reservar para continuar.</p>
+            </section>
+            <footer class="reserve-modal-actions">
+                <button id="reserve-cancel-button" class="button reserve-modal-cancel" type="button">No</button>
+                <button id="reserve-confirm-button" class="button is-primary detail-pay-button" type="button">Si, reservar</button>
+            </footer>
+        </div>
+    </div>
+
+    <script src="/js/utils.js" defer></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/event-detail.js" defer></script>
+</body>
+</html>

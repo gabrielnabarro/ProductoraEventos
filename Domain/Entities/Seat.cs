@@ -30,5 +30,15 @@ namespace Domain.Entities
 
             Status = SeatStatuses.Reserved;
         }
+
+        public void Release()
+        {
+            if (string.Equals(Status, SeatStatuses.Sold, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("La butaca vendida no se puede liberar.");
+            }
+
+            Status = SeatStatuses.Available;
+        }
     }
 }
