@@ -1,0 +1,26 @@
+@EventsApi_HostAddress = http://localhost:7026
+//@EventsApi_HostAddress = http://localhost:5269
+@eventId = 1
+@seatId = 00000000-0000-0000-0000-000000000000
+@userId = 1
+
+GET {{EventsApi_HostAddress}}/api/v1/events?page=1&pageSize=10
+Accept: application/json
+
+###
+
+GET {{EventsApi_HostAddress}}/api/v1/events/{{eventId}}/seats
+Accept: application/json
+
+###
+
+POST {{EventsApi_HostAddress}}/api/v1/reservations
+Content-Type: application/json
+Accept: application/json
+
+{
+  "seatId": "{{seatId}}",
+  "userId": {{userId}}
+}
+
+###

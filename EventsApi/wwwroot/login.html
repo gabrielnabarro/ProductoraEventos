@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ticketix | Iniciar sesion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body class="ticketix-page">
+    <section class="section">
+        <div class="container is-fluid">
+            <header class="box topbar mb-5">
+                <div class="topbar-brand">
+                    <p class="title is-4 mb-0"><span class="icon has-text-primary mr-2"><i class="fa-solid fa-ticket"></i></span>Ticketix</p>
+                    <aside class="menu topbar-menu" aria-label="Navegacion principal">
+                        <ul class="menu-list">
+                            <li><a class="topbar-link is-active" href="/">Cartelera</a></li>
+                        </ul>
+                    </aside>
+                </div>
+                <div class="topbar-actions">
+                    <div class="auth-nav" data-auth-nav data-auth-view="login"></div>
+                </div>
+            </header>
+
+            <section class="auth-layout">
+                <div class="columns is-centered">
+                    <div class="column is-5-desktop is-7-tablet">
+                        <div class="box auth-card">
+                            <p class="heading">Acceso</p>
+                            <h1 class="title is-2 mb-3">Iniciar sesion</h1>
+                            <div id="auth-feedback" class="notification is-hidden mb-4" role="status" aria-live="polite"></div>
+                            <form id="login-form" class="auth-form">
+                                <div class="field">
+                                    <label class="label" for="email">Email</label>
+                                    <div class="control has-icons-left">
+                                        <input id="email" name="email" class="input" type="email" autocomplete="email" required>
+                                        <span class="icon is-left"><i class="fa-regular fa-envelope"></i></span>
+                                    </div>
+                                </div>
+                                <div class="field mb-5">
+                                    <label class="label" for="password">Contraseña</label>
+                                    <div class="control has-icons-left">
+                                        <input id="password" name="password" class="input" type="password" autocomplete="current-password" required>
+                                        <span class="icon is-left"><i class="fa-solid fa-key"></i></span>
+                                    </div>
+                                </div>
+                                <button id="login-submit" class="button is-primary is-fullwidth auth-submit" type="submit">Entrar</button>
+                            </form>
+                            <p class="auth-switch mt-4 mb-0">No tienes cuenta? <a id="register-switch-link" href="/register.html">Crear usuario</a></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+    <script src="/js/utils.js" defer></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/login.js" defer></script>
+</body>
+</html>
