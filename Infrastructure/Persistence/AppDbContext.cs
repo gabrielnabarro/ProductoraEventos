@@ -79,6 +79,7 @@ public sealed class AppDbContext : DbContext
         {
             entity.ToTable("USER");
             entity.HasKey(user => user.Id);
+            entity.HasIndex(user => user.Email).IsUnique();
 
             entity.Property(user => user.Id).HasColumnName("Id");
             entity.Property(user => user.Name).HasColumnName("Name").HasMaxLength(100);

@@ -1,0 +1,48 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ticketix | Eventos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body class="ticketix-page">
+    <section class="section">
+        <div class="container is-fluid home-shell">
+            <header class="box topbar mb-5">
+                <div class="topbar-brand">
+                    <p class="title is-4 mb-0"><span class="icon has-text-primary mr-2"><i class="fa-solid fa-ticket"></i></span>Ticketix</p>
+                    <aside class="menu topbar-menu" aria-label="Navegacion principal">
+                        <ul class="menu-list">
+                            <li><a class="topbar-link is-active" href="/">Cartelera</a></li>
+                        </ul>
+                    </aside>
+                </div>
+                <div class="topbar-actions">
+                    <div class="auth-nav" data-auth-nav></div>
+                </div>
+            </header>
+
+            <section class="box home-content">
+                <p class="heading mb-5">Cartelera</p>
+                <div id="events-feedback" class="notification is-hidden mb-5" role="status" aria-live="polite"></div>
+                <div id="events-grid" class="columns is-multiline" aria-live="polite"></div>
+                <nav class="pagination is-centered mt-5" aria-label="Paginacion de eventos">
+                    <button id="pagination-prev" class="pagination-previous" type="button" aria-label="Pagina anterior">Anterior</button>
+                    <button id="pagination-next" class="pagination-next" type="button" aria-label="Pagina siguiente">Siguiente</button>
+                    <ul class="pagination-list"><li><span id="pagination-status" class="pagination-link is-current">Pagina 1 de 1</span></li></ul>
+                </nav>
+            </section>
+        </div>
+    </section>
+    <script src="/js/utils.js" defer></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>

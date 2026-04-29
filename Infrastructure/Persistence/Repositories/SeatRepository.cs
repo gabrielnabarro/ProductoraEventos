@@ -16,6 +16,8 @@ public sealed class SeatRepository : ISeatRepository
 
     public Task<Seat?> GetByIdAsync(Guid seatId, CancellationToken cancellationToken = default)
     {
-        return _context.SEAT.FirstOrDefaultAsync(seat => seat.Id == seatId, cancellationToken);
+        return _context.SEAT
+            .Include(seat => seat.Sector)
+            .FirstOrDefaultAsync(seat => seat.Id == seatId, cancellationToken);
     }
 }

@@ -7,11 +7,35 @@ namespace Domain.Entities
         public Guid Id { get; set; }
         public int UserId { get; set; }
         public Guid SeatId { get; set; }
-        public string Status { get; set; } = ReservationStatuses.Reserved;
+        public string Status { get; set; } = ReservationStatuses.Pending;
         public DateTime ReservedAt { get; set; }
         public DateTime ExpiresAt { get; set; }
 
         public User? User { get; set; }
         public Seat? Seat { get; set; }
+
+        public bool IsForSeat(Guid seatId)
+        {
+            return SeatId == seatId;
+        }
+
+        public void Expire(DateTime timestamp)
+        {
+            Status = ReservationStatuses.Expired;
+            ExpiresAt = timestamp;
+        }
+
+        public static Reservation CreatePending(int userId, Guid seatId, DateTime reservedAt, DateTime expiresAt)
+        {
+            return new Reservation
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                SeatId = seatId,
+                Status = ReservationStatuses.Pending,
+                ReservedAt = reservedAt,
+                ExpiresAt = expiresAt
+            };
+        }
     }
 }
