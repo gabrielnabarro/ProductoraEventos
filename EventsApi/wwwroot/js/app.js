@@ -1,3 +1,4 @@
+
 const grid = $("#events-grid"), feedback = $("#events-feedback"), prev = $("#pagination-prev"), next = $("#pagination-next"), status = $("#pagination-status"), size = 9;
 let page = 1, pages = 1;
 
