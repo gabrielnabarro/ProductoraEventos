@@ -1,4 +1,4 @@
-# *** Productora de Eventos - Plataforma de Venta de Entradas ***
+# Productora de Eventos - Plataforma de Venta de Entradas
 
 ## Requisitos
 Antes de iniciar, se debe tener instalado en el sistema:
