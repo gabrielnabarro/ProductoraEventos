@@ -58,7 +58,6 @@ La aplicacion crea automaticamente:
 
 ## Accesos a la aplicacion
 Una vez levantada la aplicacion, se puede acceder desde:
-- Pagina web HTTP: http://localhost:5269/
 - Pagina web HTTPS: https://localhost:7026/
-- Swagger UI: http://localhost:5269/swagger
+- Swagger UI: https://localhost:7026/swagger
 
