@@ -10,7 +10,9 @@ using Application.UseCases.Events.Queries.GetAllEvents;
 using Application.UseCases.Events.Queries.GetEventById;
 using Application.UseCases.Events.Queries.GetEventSeatMap;
 using Application.UseCases.Reservations.Commands.CreateReservation;
+using Application.UseCases.Reservations.Commands.ExpirePendingReservations;
 using Application.UseCases.Reservations.Queries.GetUserReservations;
+using EventsApi.BackgroundJobs;
 using EventsApi.Middlewares;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +42,8 @@ builder.Services.AddControllers()
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.Configure<ReservationExpirationJobOptions>(
+    builder.Configuration.GetSection(ReservationExpirationJobOptions.SectionName));
 
 var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -60,12 +64,15 @@ builder.Services.AddScoped<IGetEventByIdQueryHandler, GetEventByIdQueryHandler>(
 builder.Services.AddScoped<IGetEventSeatMapQueryHandler, GetEventSeatMapQueryHandler>();
 builder.Services.AddScoped<ReservationSelectionPolicy>();
 builder.Services.AddScoped<ReservationAuditLogFactory>();
+builder.Services.AddScoped<ReservationExpirationAuditLogFactory>();
 builder.Services.AddScoped<ReservationMessageFactory>();
 builder.Services.AddScoped<ReservationResponseFactory>();
 builder.Services.AddScoped<ICreateReservationCommandHandler, CreateReservationCommandHandler>();
+builder.Services.AddScoped<IExpirePendingReservationsCommandHandler, ExpirePendingReservationsCommandHandler>();
 builder.Services.AddScoped<IGetUserReservationsQueryHandler, GetUserReservationsQueryHandler>();
 builder.Services.AddScoped<IRegisterCommandHandler, RegisterCommandHandler>();
 builder.Services.AddScoped<ILoginCommandHandler, LoginCommandHandler>();
+builder.Services.AddHostedService<ExpirePendingReservationsHostedService>();
 
 var app = builder.Build();
 
@@ -102,3 +109,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program
+{
+}
