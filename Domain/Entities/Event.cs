@@ -1,3 +1,5 @@
+using Domain.Constants;
+
 namespace Domain.Entities
 {
     public class Event
@@ -9,5 +11,9 @@ namespace Domain.Entities
         public string Status { get; set; } = string.Empty;
 
         public ICollection<Sector> Sectors { get; set; } = new List<Sector>();
+
+      
     }
+
+    
 }
