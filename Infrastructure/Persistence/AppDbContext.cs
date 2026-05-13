@@ -17,6 +17,18 @@ public sealed class AppDbContext : DbContext
     public DbSet<Reservation> RESERVATION => Set<Reservation>();
     public DbSet<AuditLog> AUDIT_LOG => Set<AuditLog>();
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        PrepareSeatConcurrencyTokens();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        PrepareSeatConcurrencyTokens();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -123,5 +135,39 @@ public sealed class AppDbContext : DbContext
             entity.Property(auditLog => auditLog.Details).HasColumnName("Details");
             entity.Property(auditLog => auditLog.CreatedAt).HasColumnName("CreatedAt");
         });
+    }
+
+    private void PrepareSeatConcurrencyTokens()
+    {
+        foreach (var entry in ChangeTracker.Entries<Seat>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                if (entry.Entity.Version <= 0)
+                {
+                    entry.Entity.Version = 1;
+                }
+
+                continue;
+            }
+
+            if (entry.State != EntityState.Modified)
+            {
+                continue;
+            }
+
+            var hasTrackedSeatChanges = entry.Properties.Any(property =>
+                property.IsModified &&
+                !string.Equals(property.Metadata.Name, nameof(Seat.Version), StringComparison.Ordinal));
+
+            if (!hasTrackedSeatChanges)
+            {
+                continue;
+            }
+
+            var versionProperty = entry.Property(seat => seat.Version);
+            versionProperty.CurrentValue = versionProperty.OriginalValue + 1;
+            versionProperty.IsModified = true;
+        }
     }
 }

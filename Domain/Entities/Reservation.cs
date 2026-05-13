@@ -19,6 +19,12 @@ namespace Domain.Entities
             return SeatId == seatId;
         }
 
+        public bool CanExpire(DateTime now)
+        {
+            return string.Equals(Status, ReservationStatuses.Pending, StringComparison.OrdinalIgnoreCase)
+                && ExpiresAt <= now;
+        }
+
         public void Expire(DateTime timestamp)
         {
             Status = ReservationStatuses.Expired;

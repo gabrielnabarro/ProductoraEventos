@@ -61,3 +61,11 @@ Una vez levantada la aplicacion, se puede acceder desde:
 - Pagina web HTTPS: https://localhost:7026/
 - Swagger UI: https://localhost:7026/swagger
 
+## Pruebas de integracion de concurrencia
+
+Desde la raiz de la solucion, ejecutar:
+
+```bash
+dotnet test .\EventsApi.IntegrationTests\EventsApi.IntegrationTests.csproj
+```
+
