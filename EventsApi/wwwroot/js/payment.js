@@ -100,26 +100,27 @@ function startTimer() {
 
     const updateClock = () => {
         const now = new Date().getTime();
-        const remaining = expiresAt - now;
+        const remaining = Math.max(0, expiresAt - now);
 
-        if (remaining <= 0) {
+        if (remaining <= 0 || totalMs <= 0) {
             clearInterval(state.interval);
-            el.timer.textContent = "00:00";
+            state.interval = null;
+            el.timer.textContent = "Reserva expirada";
             el.timer.classList.add("timer-danger");
             el.progress.value = 0;
             el.progress.classList.replace("is-primary", "is-danger");
             el.payBtn.disabled = true;
             
-            showToast("El tiempo de reserva ha expirado. El asiento ha sido liberado automáticamente.");
+            showToast("La reserva ya no esta disponible.");
             setTimeout(() => { location.href = el.cancelLink.href; }, 3500);
             return;
         }
 
-        const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+        const m = Math.floor(remaining / (1000 * 60));
         const s = Math.floor((remaining % (1000 * 60)) / 1000);
         
         el.timer.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        el.progress.value = (remaining / totalMs) * 100;
+        el.progress.value = Math.min(100, Math.max(0, (remaining / totalMs) * 100));
 
         if (m === 0 && s <= 30) {
             el.timer.classList.add("timer-danger");

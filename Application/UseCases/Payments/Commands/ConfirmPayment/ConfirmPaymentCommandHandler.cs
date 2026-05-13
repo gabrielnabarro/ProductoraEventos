@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Common;
 using Application.Interfaces;
 using Domain.Constants;
 using Domain.Entities;
@@ -115,7 +116,7 @@ namespace Application.UseCases.Payments.Commands.ConfirmPayment
                     UserId = reservation.UserId,
                     SeatStatus = reservation.Seat.Status,
                     ReservationStatus = reservation.Status,
-                    ProcessedAt = processedAt,
+                    ProcessedAt = UtcDateTime.Normalize(processedAt),
                     Message = "Pago procesado correctamente. La butaca ha sido vendida."
                 };
             }

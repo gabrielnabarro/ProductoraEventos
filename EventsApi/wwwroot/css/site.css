@@ -145,6 +145,15 @@
 .seat-chip.is-selected { outline: 3px solid #27b985; box-shadow: 0 0 0 4px rgba(39, 185, 133, 0.15), 6px 6px 0 rgba(15, 95, 63, 0.16); }
 .seat-chip:disabled { cursor: not-allowed; }
 
+.reservation-countdown { margin-top: 1rem; padding: 1rem; border: 1px solid var(--border-strong); background: rgba(0, 209, 178, 0.08); text-align: center; }
+.reservation-countdown .timer-label { margin: 0 0 0.35rem; color: var(--muted); font-size: 0.72rem; font-weight: 800; letter-spacing: var(--kicker-track); text-transform: uppercase; }
+.reservation-countdown .timer-value { margin: 0; color: var(--accent-strong); font-family: "Space Grotesk", sans-serif; font-size: clamp(2.2rem, 5vw, 3rem); font-weight: 700; line-height: 1; letter-spacing: -0.04em; }
+.reservation-countdown .timer-copy { margin: 0.55rem 0 0; color: var(--muted); font-size: 0.9rem; line-height: 1.4; }
+.reservation-countdown.is-danger { border-color: var(--danger); background: rgba(255, 56, 96, 0.08); }
+.reservation-countdown.is-danger .timer-value { color: var(--danger-strong); animation: pulseDanger 1.5s infinite; }
+.reservation-countdown.is-expired { border-color: var(--danger); background: rgba(255, 56, 96, 0.08); }
+.reservation-countdown.is-expired .timer-value { color: var(--danger-strong); font-size: clamp(1.35rem, 4vw, 1.75rem); letter-spacing: -0.02em; }
+
 .ticketix-page .modal.is-active { display: flex; align-items: center; justify-content: center; padding: 1rem; }
 .ticketix-page .modal-background { background: rgba(24, 52, 40, 0.45); backdrop-filter: blur(2px); }
 

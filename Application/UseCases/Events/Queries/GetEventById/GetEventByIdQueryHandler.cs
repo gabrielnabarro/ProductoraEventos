@@ -1,4 +1,5 @@
 using Application.DTOs;
+using Application.Common;
 using Application.Interfaces;
 using Domain.Exceptions;
 
@@ -26,7 +27,7 @@ public sealed class GetEventByIdQueryHandler : IGetEventByIdQueryHandler
         {
             Id = eventEntity.Id,
             Name = eventEntity.Name,
-            EventDate = eventEntity.EventDate,
+            EventDate = UtcDateTime.Normalize(eventEntity.EventDate),
             Venue = eventEntity.Venue,
             Status = eventEntity.Status
         };

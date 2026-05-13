@@ -1,7 +1,7 @@
-const el = { title: $("#detail-title"), feedback: $("#detail-feedback"), summary: $("#event-summary"), choice: $("#selected-seat-summary"), pay: $("#payment-button"), map: $("#seat-map"), modal: $("#reserve-confirm-modal"), modalKicker: $("#reserve-confirm-kicker"), modalTitle: $("#reserve-confirm-title"), modalText: $("#reserve-confirm-text"), modalConfirm: $("#reserve-confirm-button"), modalCancel: $("#reserve-cancel-button") };
+const el = { title: $("#detail-title"), feedback: $("#detail-feedback"), summary: $("#event-summary"), choice: $("#selected-seat-summary"), pay: $("#payment-button"), timer: $("#reservation-countdown"), map: $("#seat-map"), modal: $("#reserve-confirm-modal"), modalKicker: $("#reserve-confirm-kicker"), modalTitle: $("#reserve-confirm-title"), modalText: $("#reserve-confirm-text"), modalConfirm: $("#reserve-confirm-button"), modalCancel: $("#reserve-cancel-button") };
 const headers = { headers: { Accept: "application/json" } };
 const seats = { Available: ["available", "fa-circle-check", "Disponible"], Reserved: ["reserved", "fa-hourglass-half", "Reservado"], Sold: ["sold", "fa-ban", "Vendido"] };
-const state = { id: Number(new URLSearchParams(location.search).get("id")), event: null, sectors: [], activeReservation: null, reserving: null, pendingSeatId: null };
+const state = { id: Number(new URLSearchParams(location.search).get("id")), event: null, sectors: [], activeReservation: null, reserving: null, pendingSeatId: null, expiredReservationToastId: null };
 
 document.addEventListener("DOMContentLoaded", () => {
     el.map.onclick = (e) => {
@@ -42,11 +42,24 @@ const userId = () => session()?.id || 0;
 const cloneSectors = (list) => list.map((s) => ({ ...s, seats: (s.seats || []).map((seat) => ({ ...seat })) }));
 const seatState = (status) => seats[status]?.[0] || "sold";
 const setFeedback = (msg = "", type = "is-hidden") => { el.feedback.className = `notification ${type} mb-5`; el.feedback.textContent = msg; };
+const showToast = (message, type = "is-danger", title = "Atención", timeout = 4000) => {
+    let toastC = document.getElementById("toast-container");
+    if (!toastC) {
+        toastC = document.createElement("div");
+        toastC.id = "toast-container";
+        document.body.appendChild(toastC);
+    }
+
+    toastC.innerHTML = `<div class="toast box ${type}"><div class="is-flex is-align-items-center"><span class="icon is-large has-text-danger mr-3"><i class="fa-solid fa-triangle-exclamation fa-2xl"></i></span><div><p class="has-text-weight-bold mb-0">${esc(title)}</p><p class="mb-0">${esc(message)}</p></div></div></div>`;
+    setTimeout(() => { if (toastC.firstChild) toastC.firstChild.remove(); }, timeout);
+};
 const getSeat = (id) => { for (const sector of state.sectors) { const seat = sector.seats.find((s) => String(s.id) === String(id)); if (seat) return { sector, seat }; } return null; };
 const reservationsUrl = () => `/api/v1/users/${userId()}/reservations?eventId=${state.id}&status=Pending`;
 const selectedSeatId = () => state.activeReservation?.seatId || null;
 const isReservationChange = (seatId) => !!state.activeReservation && String(state.activeReservation.seatId) !== String(seatId);
 const reservationSeatLabel = (reservation) => reservation ? `${reservation.seatRowIdentifier}${reservation.seatNumber}` : "";
+const reservationExpiresAt = (reservation) => reservation?.expiresAt ? new Date(reservation.expiresAt).getTime() : 0;
+const isReservationExpired = (reservation) => { const expiresAt = reservationExpiresAt(reservation); return !!expiresAt && expiresAt <= Date.now(); };
 const setActiveReservation = (reservations) => { state.activeReservation = Array.isArray(reservations) && reservations.length ? reservations[0] : null; };
 const setSeatStatus = (seatId, status) => { state.sectors.forEach((sector) => sector.seats.forEach((seat) => { if (String(seat.id) === String(seatId)) seat.status = status; })); };
 
@@ -124,93 +137,111 @@ function render() {
 
 // Variable global para controlar el intervalo del reloj en esta pantalla
 let eventTimerInterval = null;
+let expirationRefreshInterval = null;
 
 function renderChoice(message = "") {
     const reservation = state.activeReservation;
     const logged = !!session();
-    el.pay.disabled = !reservation || !!message || !logged;
+    const expired = isReservationExpired(reservation);
+    el.pay.disabled = !reservation || !!message || !logged || expired;
     el.choice.className = `detail-panel detail-panel-selection${message ? " detail-panel-error" : ""}${reservation && !message ? " is-selected" : ""} mb-4`;
 
-    // Inyectamos el diseño del contador dentro del HTML si hay reserva
     el.choice.innerHTML = message
         ? `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">${esc(message)}</p>`
         : reservation
             ? `<p class="panel-kicker">Tu reserva</p>
-               <div class="is-flex is-justify-content-space-between is-align-items-flex-start">
-                   <div>
-                       <p class="panel-seat">${esc(reservationSeatLabel(reservation))}</p>
-                       <p class="panel-copy panel-copy-strong mb-0">Sector ${esc(reservation.sectorName)}</p>
-                   </div>
-                   <div class="has-text-right">
-                       <p class="heading mb-1" style="font-size: 0.65rem;">Expira en</p>
-                       <div id="event-timer-display" class="has-text-primary has-text-weight-bold" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; line-height: 1;">05:00</div>
-                   </div>
-               </div>
+               <p class="panel-seat">${esc(reservationSeatLabel(reservation))}</p>
+               <p class="panel-copy panel-copy-strong mb-0">Sector ${esc(reservation.sectorName)}</p>
                <p class="panel-copy mb-2 mt-1">${fmtMoney(reservation.price)}</p>
                <p class="panel-copy mb-0" style="font-size: 0.85rem;">Puedes cambiar tu reserva seleccionando otra butaca.</p>`
             : logged
                 ? `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">No tienes una reserva pendiente. Selecciona una butaca disponible para reservar.</p>`
                 : `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">Inicia sesion para reservar una butaca y continuar al pago.</p>`;
 
-    // Disparamos el contador solo si tenemos una reserva activa y la UI se renderizó
-    if (reservation && !message) {
+    if (reservation && !message && !expired) {
         startEventTimer();
+    } else if (reservation && expired) {
+        renderExpiredTimer(false);
     } else {
-        if (eventTimerInterval) clearInterval(eventTimerInterval);
+        hideEventTimer();
     }
 }
 
-// Nueva función exclusiva para manejar el tiempo en la pantalla del mapa
+function hideEventTimer() {
+    if (eventTimerInterval) clearInterval(eventTimerInterval);
+    eventTimerInterval = null;
+    stopExpirationRefreshPolling();
+    el.timer.className = "reservation-countdown is-hidden";
+    el.timer.innerHTML = "";
+}
+
+function stopExpirationRefreshPolling() {
+    if (expirationRefreshInterval) clearInterval(expirationRefreshInterval);
+    expirationRefreshInterval = null;
+}
+
+function startExpirationRefreshPolling() {
+    if (expirationRefreshInterval) return;
+
+    expirationRefreshInterval = setInterval(async () => {
+        try {
+            await refresh();
+
+            if (!state.activeReservation || !isReservationExpired(state.activeReservation)) {
+                stopExpirationRefreshPolling();
+            }
+        } catch {
+            setFeedback("La reserva expiro, pero no se pudo refrescar el mapa actualizado.", "is-warning is-light");
+        }
+    }, 5000);
+}
+
+function renderActiveTimer(value, danger = false) {
+    el.timer.className = `reservation-countdown${danger ? " is-danger" : ""}`;
+    el.timer.innerHTML = `<p class="timer-label">Carrito de Compras - expira en</p><p class="timer-value">${esc(value)}</p>`;
+}
+
+function renderExpiredTimer(showNotification) {
+    if (eventTimerInterval) clearInterval(eventTimerInterval);
+    eventTimerInterval = null;
+    el.pay.disabled = true;
+    el.timer.className = "reservation-countdown is-expired";
+    el.timer.innerHTML = `<p class="timer-label">Carrito de Compras</p><p class="timer-value">Reserva expirada</p><p class="timer-copy">La reserva ya no esta disponible.</p>`;
+
+    const reservationId = state.activeReservation?.reservationId || state.activeReservation?.seatId || "current";
+    if (showNotification && state.expiredReservationToastId !== reservationId) {
+        state.expiredReservationToastId = reservationId;
+        showToast("La reserva ya no esta disponible.");
+        refresh().catch(() => setFeedback("La reserva expiro, pero no se pudo refrescar el mapa actualizado.", "is-warning is-light"));
+    }
+
+    startExpirationRefreshPolling();
+}
+
 function startEventTimer() {
     if (eventTimerInterval) clearInterval(eventTimerInterval);
+    stopExpirationRefreshPolling();
 
     const reservation = state.activeReservation;
     if (!reservation || !reservation.expiresAt) return;
 
-    const display = document.getElementById("event-timer-display");
-    if (!display) return;
-
-    // Calculamos el tiempo base leyendo la expiración provista por la API (C#)
-    const expiresAt = new Date(reservation.expiresAt).getTime();
+    const expiresAt = reservationExpiresAt(reservation);
 
     const updateClock = () => {
         const now = new Date().getTime();
         const remaining = expiresAt - now;
 
-        // Si el tiempo llega a cero o negativo
         if (remaining <= 0) {
-            clearInterval(eventTimerInterval);
-            display.textContent = "00:00";
-            display.classList.replace("has-text-primary", "has-text-danger");
-
-            // Creamos una notificación Toast al vuelo
-            let toastC = document.getElementById("toast-container");
-            if (!toastC) {
-                toastC = document.createElement("div");
-                toastC.id = "toast-container";
-                document.body.appendChild(toastC);
-            }
-            toastC.innerHTML = `<div class="toast box is-danger"><div class="is-flex is-align-items-center"><span class="icon is-large has-text-danger mr-3"><i class="fa-solid fa-triangle-exclamation fa-2xl"></i></span><div><p class="has-text-weight-bold mb-0">Atención</p><p class="mb-0">El tiempo de tu reserva expiró. La butaca ha sido liberada.</p></div></div></div>`;
-            setTimeout(() => { if (toastC.firstChild) toastC.firstChild.remove(); }, 4500);
-
-            // Forzamos al mapa a recargar la información (la API ya no traerá esta reserva)
-            refresh();
+            renderExpiredTimer(true);
             return;
         }
 
-        // Formateo de los minutos y segundos restantes
         const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
         const s = Math.floor((remaining % (1000 * 60)) / 1000);
 
-        display.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-
-        // Alerta visual: cuando queden 30 segundos, el texto se vuelve rojo
-        if (m === 0 && s <= 30) {
-            display.classList.replace("has-text-primary", "has-text-danger");
-        }
+        renderActiveTimer(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`, remaining <= 30000);
     };
 
-    // Ejecutamos la primera vez inmediatamente y luego cada 1000ms
     updateClock();
     eventTimerInterval = setInterval(updateClock, 1000);
 }
@@ -278,16 +309,11 @@ async function reserve(seatId) {
     } catch (e) {
         // Bloque Try-Catch corregido sin errores de sintaxis
         if (e.status === 409) {
-            await refresh().catch(() => { });
-
-            let toastC = document.getElementById("toast-container");
-            if (!toastC) {
-                toastC = document.createElement("div");
-                toastC.id = "toast-container";
-                document.body.appendChild(toastC);
+            const refreshed = await refresh().then(() => true).catch(() => false);
+            if (!refreshed) {
+                setFeedback("Asiento ya no disponible. No se pudo refrescar el mapa actualizado.", "is-warning is-light");
             }
-            toastC.innerHTML = `<div class="toast box is-danger"><div class="is-flex is-align-items-center"><span class="icon is-large has-text-danger mr-3"><i class="fa-solid fa-triangle-exclamation fa-2xl"></i></span><div><p class="has-text-weight-bold mb-0">Atención</p><p class="mb-0">Asiento ya no disponible.</p></div></div></div>`;
-            setTimeout(() => { if (toastC.firstChild) toastC.firstChild.remove(); }, 4000);
+            showToast("Asiento ya no disponible");
 
         } else {
             setFeedback(resolveErrorMessage(e, "No se pudo reservar la butaca."), "is-danger is-light");

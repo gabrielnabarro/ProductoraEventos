@@ -1,4 +1,5 @@
 using Application.DTOs;
+using Application.Common;
 using Application.Interfaces;
 using Domain.Exceptions;
 
@@ -26,7 +27,7 @@ public sealed class GetEventSeatMapQueryHandler : IGetEventSeatMapQueryHandler
         {
             EventId = eventEntity.Id,
             EventName = eventEntity.Name,
-            EventDate = eventEntity.EventDate,
+            EventDate = UtcDateTime.Normalize(eventEntity.EventDate),
             Venue = eventEntity.Venue,
             Sectors = eventEntity.Sectors
                 .OrderBy(sector => sector.Id)
