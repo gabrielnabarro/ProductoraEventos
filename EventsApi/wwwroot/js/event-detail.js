@@ -307,7 +307,6 @@ async function reserve(seatId) {
             setFeedback("La reserva se realizo, pero no se pudo recargar el mapa actualizado.", "is-warning is-light");
         }
     } catch (e) {
-        // Bloque Try-Catch corregido sin errores de sintaxis
         if (e.status === 409) {
             const refreshed = await refresh().then(() => true).catch(() => false);
             if (!refreshed) {
