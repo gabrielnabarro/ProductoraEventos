@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.key === "Escape" && state.pendingSeatId) closeReserveConfirm();
     });
 
-    // --- CÓDIGO DE REDIRECCIÓN AL PAGO ---
     el.pay.addEventListener("click", (e) => {
         e.preventDefault();
         if (state.id) {
