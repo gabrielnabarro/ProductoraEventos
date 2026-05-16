@@ -36,7 +36,6 @@ namespace Application.UseCases.Payments.Commands.ConfirmPayment
 
             var attemptTimestamp = DateTime.UtcNow;
 
-            // Registro de intento de pago ANTES de la transacción (siempre persiste)
             await _auditLogRepository.AddAsync(
                 BuildAuditLog(command.UserId, command.ReservationId,
                               AuditLogActions.PaymentAttempt,
@@ -45,7 +44,6 @@ namespace Application.UseCases.Payments.Commands.ConfirmPayment
                 cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // Obtener la reserva con butaca cargada (con tracking para que EF detecte los cambios)
             var reservation = await _reservationRepository.GetByIdAsync(command.ReservationId, cancellationToken);
 
             if (reservation is null)
@@ -91,13 +89,10 @@ namespace Application.UseCases.Payments.Commands.ConfirmPayment
             {
                 var processedAt = DateTime.UtcNow;
 
-                // Marcar butaca como Vendida
                 reservation.Seat.Sell();
 
-                // Marcar reserva como Pagada
                 reservation.Pay();
 
-                //Registrar auditoría de pago exitoso (dentro de la misma transacción)
                 await _auditLogRepository.AddAsync(
                     BuildAuditLog(command.UserId, command.ReservationId,
                                   AuditLogActions.PaymentSuccess,
@@ -122,7 +117,6 @@ namespace Application.UseCases.Payments.Commands.ConfirmPayment
             }
             catch
             {
-                // Rollback completo: ninguno de los tres cambios queda persistido
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
 
                 await LogFailureAsync(command.UserId, command.ReservationId,
