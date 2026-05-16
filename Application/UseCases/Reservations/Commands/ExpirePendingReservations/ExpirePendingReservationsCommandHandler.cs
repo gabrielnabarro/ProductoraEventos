@@ -1,4 +1,6 @@
 using Application.Interfaces;
+using Domain.Constants;
+using Domain.Entities;
 using Domain.Exceptions;
 
 namespace Application.UseCases.Reservations.Commands.ExpirePendingReservations;
@@ -8,29 +10,27 @@ public sealed class ExpirePendingReservationsCommandHandler : IExpirePendingRese
     private readonly IReservationRepository _reservationRepository;
     private readonly IAuditLogRepository _auditLogRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ReservationExpirationAuditLogFactory _reservationExpirationAuditLogFactory;
 
     public ExpirePendingReservationsCommandHandler(
         IReservationRepository reservationRepository,
         IAuditLogRepository auditLogRepository,
-        IUnitOfWork unitOfWork,
-        ReservationExpirationAuditLogFactory reservationExpirationAuditLogFactory)
+        IUnitOfWork unitOfWork)
     {
         _reservationRepository = reservationRepository;
         _auditLogRepository = auditLogRepository;
         _unitOfWork = unitOfWork;
-        _reservationExpirationAuditLogFactory = reservationExpirationAuditLogFactory;
     }
 
-    public async Task<ExpirePendingReservationsResult> Handle(ExpirePendingReservationsCommand command, CancellationToken cancellationToken = default)
+    public async Task<int> Handle(ExpirePendingReservationsCommand command, CancellationToken cancellationToken = default)
     {
         ValidateCommand(command);
 
-        var reservations = await _reservationRepository.GetExpiredPendingAsync(command.TimestampUtc, command.BatchSize, cancellationToken);
+        var timestampUtc = DateTime.UtcNow;
+        var reservations = await _reservationRepository.GetExpiredPendingAsync(timestampUtc, command.BatchSize, cancellationToken);
 
         if (reservations.Count == 0)
         {
-            return new ExpirePendingReservationsResult();
+            return 0;
         }
 
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -41,7 +41,7 @@ public sealed class ExpirePendingReservationsCommandHandler : IExpirePendingRese
 
             foreach (var reservation in reservations)
             {
-                if (!reservation.CanExpire(command.TimestampUtc))
+                if (!reservation.CanExpire(timestampUtc))
                 {
                     continue;
                 }
@@ -51,11 +51,11 @@ public sealed class ExpirePendingReservationsCommandHandler : IExpirePendingRese
                     throw new InvalidOperationException($"La reserva {reservation.Id} no tiene una butaca asociada.");
                 }
 
-                reservation.Expire(command.TimestampUtc);
+                reservation.Expire(timestampUtc);
                 reservation.Seat.Release();
 
                 await _auditLogRepository.AddAsync(
-                    _reservationExpirationAuditLogFactory.CreateExpired(reservation, command.TimestampUtc),
+                    CreateExpiredAuditLog(reservation, timestampUtc),
                     cancellationToken);
 
                 expiredReservationsCount++;
@@ -64,16 +64,13 @@ public sealed class ExpirePendingReservationsCommandHandler : IExpirePendingRese
             if (expiredReservationsCount == 0)
             {
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                return new ExpirePendingReservationsResult();
+                return 0;
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return new ExpirePendingReservationsResult
-            {
-                ExpiredReservationsCount = expiredReservationsCount
-            };
+            return expiredReservationsCount;
         }
         catch
         {
@@ -82,16 +79,25 @@ public sealed class ExpirePendingReservationsCommandHandler : IExpirePendingRese
         }
     }
 
+    private static AuditLog CreateExpiredAuditLog(Reservation reservation, DateTime timestampUtc)
+    {
+        return new AuditLog
+        {
+            Id = Guid.NewGuid(),
+            UserId = reservation.UserId,
+            Action = AuditLogActions.ReserveExpired,
+            EntityType = AuditLogEntityTypes.Seat,
+            EntityId = reservation.SeatId.ToString(),
+            Details = $"La reserva {reservation.Id} vencio por superar el tiempo limite de pago y la butaca fue liberada.",
+            CreatedAt = timestampUtc
+        };
+    }
+
     private static void ValidateCommand(ExpirePendingReservationsCommand command)
     {
         if (command.BatchSize <= 0)
         {
-            throw new ValidationException("El tamano del lote debe ser mayor a cero.");
-        }
-
-        if (command.TimestampUtc == default)
-        {
-            throw new ValidationException("El timestamp del proceso es obligatorio.");
+            throw new ValidationException("El tamaño del lote debe ser mayor a cero.");
         }
     }
 }

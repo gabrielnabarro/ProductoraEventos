@@ -65,7 +65,6 @@ builder.Services.AddScoped<IGetEventByIdQueryHandler, GetEventByIdQueryHandler>(
 builder.Services.AddScoped<IGetEventSeatMapQueryHandler, GetEventSeatMapQueryHandler>();
 builder.Services.AddScoped<ReservationSelectionPolicy>();
 builder.Services.AddScoped<ReservationAuditLogFactory>();
-builder.Services.AddScoped<ReservationExpirationAuditLogFactory>();
 builder.Services.AddScoped<ReservationMessageFactory>();
 builder.Services.AddScoped<ReservationResponseFactory>();
 builder.Services.AddScoped<ICreateReservationCommandHandler, CreateReservationCommandHandler>();

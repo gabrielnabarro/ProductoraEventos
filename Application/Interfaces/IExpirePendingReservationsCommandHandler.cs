@@ -4,5 +4,5 @@ namespace Application.Interfaces;
 
 public interface IExpirePendingReservationsCommandHandler
 {
-    Task<ExpirePendingReservationsResult> Handle(ExpirePendingReservationsCommand command, CancellationToken cancellationToken = default);
+    Task<int> Handle(ExpirePendingReservationsCommand command, CancellationToken cancellationToken = default);
 }

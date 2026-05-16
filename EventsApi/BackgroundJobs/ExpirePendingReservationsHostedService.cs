@@ -69,19 +69,18 @@ public sealed class ExpirePendingReservationsHostedService : BackgroundService
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
         var handler = scope.ServiceProvider.GetRequiredService<IExpirePendingReservationsCommandHandler>();
-        var result = await handler.Handle(
+        var expiredReservationsCount = await handler.Handle(
             new ExpirePendingReservationsCommand
             {
-                TimestampUtc = DateTime.UtcNow,
                 BatchSize = batchSize
             },
             cancellationToken);
 
-        if (result.ExpiredReservationsCount > 0)
+        if (expiredReservationsCount > 0)
         {
             _logger.LogInformation(
                 "Se expiraron {ExpiredReservationsCount} reservas pendientes en esta ejecucion.",
-                result.ExpiredReservationsCount);
+                expiredReservationsCount);
         }
     }
 }
