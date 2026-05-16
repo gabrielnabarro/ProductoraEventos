@@ -4,6 +4,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (v) => String(v).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 const fmtDate = (v, full = false) => !v ? "Fecha a confirmar" : new Intl.DateTimeFormat("es-AR", full ? { dateStyle: "full", timeStyle: "short" } : { dateStyle: "medium" }).format(new Date(v));
 const fmtMoney = (v) => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(v || 0);
+
 // Lee la respuesta de fetch y lanza un error si la API devolvio un fallo.
 const readJson = async (r) => {
     if (r.ok) return r.json();

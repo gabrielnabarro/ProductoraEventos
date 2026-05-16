@@ -47,6 +47,7 @@ public sealed class UnitOfWork : IUnitOfWork
         await _currentTransaction.RollbackAsync(cancellationToken);
         await _currentTransaction.DisposeAsync();
         _currentTransaction = null;
+        _context.ChangeTracker.Clear();
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)

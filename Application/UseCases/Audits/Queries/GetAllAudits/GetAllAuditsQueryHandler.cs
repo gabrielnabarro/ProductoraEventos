@@ -1,4 +1,5 @@
 using Application.DTOs;
+using Application.Common;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Exceptions;
@@ -52,7 +53,7 @@ public sealed class GetAllAuditsQueryHandler : IGetAllAuditsQueryHandler
             EntityType = auditLog.EntityType,
             EntityId = auditLog.EntityId,
             Details = auditLog.Details,
-            CreatedAt = auditLog.CreatedAt
+            CreatedAt = UtcDateTime.Normalize(auditLog.CreatedAt)
         };
     }
 }

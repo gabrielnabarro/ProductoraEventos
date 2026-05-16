@@ -57,4 +57,11 @@ public sealed class ReservationRepository : IReservationRepository
     {
         return await GetByUserAsync(userId, eventId, ReservationStatuses.Pending, cancellationToken);
     }
+
+    public Task<Reservation?> GetByIdAsync(Guid reservationId, CancellationToken cancellationToken = default)
+    {
+        return _context.RESERVATION
+            .Include(reservation => reservation.Seat)
+            .FirstOrDefaultAsync(reservation => reservation.Id == reservationId, cancellationToken);
+    }
 }

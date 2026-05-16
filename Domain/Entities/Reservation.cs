@@ -43,5 +43,18 @@ namespace Domain.Entities
                 ExpiresAt = expiresAt
             };
         }
+
+        public void Pay()
+        {
+            if (!string.Equals(Status, ReservationStatuses.Pending, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Solo una reserva pendiente puede marcarse como pagada.");
+            }
+
+            Status = ReservationStatuses.Paid;
+        }
+
+        public bool IsExpired(DateTime now) => now > ExpiresAt;
+
     }
 }

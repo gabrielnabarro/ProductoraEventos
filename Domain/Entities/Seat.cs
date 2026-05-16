@@ -40,5 +40,15 @@ namespace Domain.Entities
 
             Status = SeatStatuses.Available;
         }
+
+        public void Sell()
+        {
+            if (!string.Equals(Status, SeatStatuses.Reserved, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Solo una butaca reservada puede marcarse como vendida.");
+            }
+
+            Status = SeatStatuses.Sold;
+        }
     }
 }
