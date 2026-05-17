@@ -96,15 +96,15 @@ function applyModalContent(seatId, hit) {
         const current = state.activeReservation;
         el.modalKicker.textContent = "Confirmar cambio";
         el.modalTitle.textContent = "Cambiar reserva";
-        el.modalText.textContent = `Vas a cambiar tu reserva de la butaca ${reservationSeatLabel(current)} a la butaca ${hit.seat.rowIdentifier}${hit.seat.seatNumber}. Se liberara tu reserva anterior del Sector ${current.sectorName} y se reservara la nueva en Sector ${hit.sector.name} - ${fmtMoney(hit.sector.price)}.`;
-        el.modalConfirm.textContent = "Si, cambiar";
+        el.modalText.textContent = `Vas a cambiar tu reserva de la butaca ${reservationSeatLabel(current)} a la butaca ${hit.seat.rowIdentifier}${hit.seat.seatNumber}. Se liberará tu reserva anterior del Sector ${current.sectorName} y se reservará la nueva en Sector ${hit.sector.name} - ${fmtMoney(hit.sector.price)}.`;
+        el.modalConfirm.textContent = "Sí, cambiar";
         return;
     }
 
     el.modalKicker.textContent = "Confirmar reserva";
     el.modalTitle.textContent = "Reservar butaca";
     el.modalText.textContent = `Vas a reservar la butaca ${hit.seat.rowIdentifier}${hit.seat.seatNumber}. Entrada Sector ${hit.sector.name} - ${fmtMoney(hit.sector.price)}.`;
-    el.modalConfirm.textContent = "Si, reservar";
+    el.modalConfirm.textContent = "Sí, reservar";
 }
 
 function openReserveConfirm(seatId) {
@@ -134,7 +134,6 @@ function render() {
     renderMap();
 }
 
-// Variable global para controlar el intervalo del reloj en esta pantalla
 let eventTimerInterval = null;
 let expirationRefreshInterval = null;
 
@@ -152,10 +151,10 @@ function renderChoice(message = "") {
                <p class="panel-seat">${esc(reservationSeatLabel(reservation))}</p>
                <p class="panel-copy panel-copy-strong mb-0">Sector ${esc(reservation.sectorName)}</p>
                <p class="panel-copy mb-2 mt-1">${fmtMoney(reservation.price)}</p>
-               <p class="panel-copy mb-0" style="font-size: 0.85rem;">Puedes cambiar tu reserva seleccionando otra butaca.</p>`
+               <p class="panel-copy mb-0" style="font-size: 0.85rem;">Podés cambiar tu reserva seleccionando otra butaca.</p>`
             : logged
-                ? `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">No tienes una reserva pendiente. Selecciona una butaca disponible para reservar.</p>`
-                : `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">Inicia sesion para reservar una butaca y continuar al pago.</p>`;
+                ? `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">No tenés una reserva pendiente. Selecciona una butaca disponible para reservar.</p>`
+                : `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">Inicia sesión para reservar una butaca y continuar al pago.</p>`;
 
     if (reservation && !message && !expired) {
         startEventTimer();
@@ -190,14 +189,14 @@ function startExpirationRefreshPolling() {
                 stopExpirationRefreshPolling();
             }
         } catch {
-            setFeedback("La reserva expiro, pero no se pudo refrescar el mapa actualizado.", "is-warning is-light");
+            setFeedback("La reserva expiró, pero no se pudo refrescar el mapa actualizado.", "is-warning is-light");
         }
     }, 5000);
 }
 
 function renderActiveTimer(value, danger = false) {
     el.timer.className = `reservation-countdown${danger ? " is-danger" : ""}`;
-    el.timer.innerHTML = `<p class="timer-label">Carrito de Compras - expira en</p><p class="timer-value">${esc(value)}</p>`;
+    el.timer.innerHTML = `<p class="timer-label">Carrito de compras - expira en</p><p class="timer-value">${esc(value)}</p>`;
 }
 
 function renderExpiredTimer(showNotification) {
@@ -205,13 +204,13 @@ function renderExpiredTimer(showNotification) {
     eventTimerInterval = null;
     el.pay.disabled = true;
     el.timer.className = "reservation-countdown is-expired";
-    el.timer.innerHTML = `<p class="timer-label">Carrito de Compras</p><p class="timer-value">Reserva expirada</p><p class="timer-copy">La reserva ya no esta disponible.</p>`;
+    el.timer.innerHTML = `<p class="timer-label">Carrito de compras</p><p class="timer-value">Reserva expirada</p><p class="timer-copy">La reserva ya no está disponible.</p>`;
 
     const reservationId = state.activeReservation?.reservationId || state.activeReservation?.seatId || "current";
     if (showNotification && state.expiredReservationToastId !== reservationId) {
         state.expiredReservationToastId = reservationId;
-        showToast("La reserva ya no esta disponible.");
-        refresh().catch(() => setFeedback("La reserva expiro, pero no se pudo refrescar el mapa actualizado.", "is-warning is-light"));
+        showToast("La reserva ya no está disponible.");
+        refresh().catch(() => setFeedback("La reserva expiró, pero no se pudo refrescar el mapa actualizado.", "is-warning is-light"));
     }
 
     startExpirationRefreshPolling();
@@ -247,7 +246,7 @@ function startEventTimer() {
 
 function renderMap() {
     if (!state.sectors.length) {
-        el.map.innerHTML = '<div class="notification is-light has-text-centered">Todavia no hay un mapa de butacas disponible para este evento.</div>';
+        el.map.innerHTML = '<div class="notification is-light has-text-centered">Todavía no hay un mapa de butacas disponible para este evento.</div>';
         return;
     }
     el.map.innerHTML = state.sectors.map((sector) => `<section class="box mb-4"><header class="is-flex is-justify-content-space-between is-align-items-center mb-4 is-flex-wrap-wrap"><h3 class="title is-5 mb-0">${esc(sector.name)}</h3><span class="tag is-primary is-light is-medium">${fmtMoney(sector.price)}</span></header><div class="seats-grid">${rows(sector.seats).map((row) => `<div class="seat-row"><div class="row-seats"><div class="seat-cluster">${row.map(seatButton).join("")}</div></div></div>`).join("")}</div></section>`).join("");
@@ -261,7 +260,7 @@ function seatButton(seat) {
 }
 
 async function init() {
-    if (!state.id) return fail("El identificador del evento no es valido.");
+    if (!state.id) return fail("El identificador del evento no es válido.");
     try {
         const [event, map, reservationSnapshot] = await Promise.all([fetchJson(`/api/v1/events/${state.id}`, headers), fetchJson(`/api/v1/events/${state.id}/seats`, headers), fetchReservationSnapshot()]);
         state.event = event;
@@ -294,7 +293,7 @@ async function reserve(seatId) {
             const [map, reservations] = await Promise.all([fetchJson(`/api/v1/events/${state.id}/seats`, headers), fetchJson(reservationsUrl(), headers)]);
             state.sectors = cloneSectors(map.sectors || []);
             setActiveReservation(reservations);
-            if (!state.activeReservation) throw new Error("No se encontro la reserva actual del usuario.");
+            if (!state.activeReservation) throw new Error("No se encontró la reserva actual del usuario.");
             setFeedback();
         } catch {
             if (state.activeReservation && String(state.activeReservation.seatId) !== String(seatId)) {
@@ -303,15 +302,15 @@ async function reserve(seatId) {
             setSeatStatus(seatId, data.seatStatus || "Reserved");
             state.activeReservation = buildReservationFallback(seatId, data);
             render();
-            setFeedback("La reserva se realizo, pero no se pudo recargar el mapa actualizado.", "is-warning is-light");
+            setFeedback("La reserva se realizó, pero no se pudo recargar el mapa actualizado.", "is-warning is-light");
         }
     } catch (e) {
         if (e.status === 409) {
             const refreshed = await refresh().then(() => true).catch(() => false);
             if (!refreshed) {
-                setFeedback("Asiento ya no disponible. No se pudo refrescar el mapa actualizado.", "is-warning is-light");
+                setFeedback("Butaca ya no disponible. No se pudo refrescar el mapa actualizado.", "is-warning is-light");
             }
-            showToast("Asiento ya no disponible");
+            showToast("Butaca ya no disponible");
 
         } else {
             setFeedback(resolveErrorMessage(e, "No se pudo reservar la butaca."), "is-danger is-light");

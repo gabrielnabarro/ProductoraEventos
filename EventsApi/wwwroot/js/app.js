@@ -8,25 +8,20 @@ document.addEventListener("DOMContentLoaded", () => {
     load();
 });
 
-// Muestra mensajes informativos o de error arriba de la grilla.
 const setFeedback = (msg = "", type = "is-hidden") => {
     feedback.className = `notification ${type} mb-5`;
     feedback.textContent = msg;
 };
 
-// Actualiza el estado visual de la paginacion segun la pagina actual.
 const paintPager = (p = page, t = pages, loading = false) => {
-    status.textContent = loading ? `Cargando pagina ${p}...` : `Pagina ${p} de ${t}`;
+    status.textContent = loading ? `Cargando página ${p}...` : `Página ${p} de ${t}`;
     prev.disabled = loading || p <= 1;
     next.disabled = loading || p >= t;
 };
 
-// Genera una card placeholder mientras llegan los eventos desde la API.
-const skeleton = () => `<div class="column is-6-tablet is-6-desktop is-4-widescreen"><article class="card event-card"><div class="card-content"><p class="panel-kicker">Evento</p><h2 class="panel-title">Cargando evento</h2><div class="panel-meta"><p class="panel-meta-item"><span class="icon" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span><span>Buscando venue...</span></p><p class="panel-meta-item"><span class="icon" aria-hidden="true"><i class="fa-regular fa-calendar"></i></span><span>Confirmando fecha...</span></p></div><a class="button is-primary is-fullwidth event-card-cta mt-auto" aria-disabled="true">Ver detalles</a></div></article></div>`;
-// Genera el HTML de una card real a partir de un evento recibido.
+const skeleton = () => `<div class="column is-6-tablet is-6-desktop is-4-widescreen"><article class="card event-card"><div class="card-content"><p class="panel-kicker">Evento</p><h2 class="panel-title">Cargando evento</h2><div class="panel-meta"><p class="panel-meta-item"><span class="icon" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span><span>Buscando lugar...</span></p><p class="panel-meta-item"><span class="icon" aria-hidden="true"><i class="fa-regular fa-calendar"></i></span><span>Confirmando fecha...</span></p></div><a class="button is-primary is-fullwidth event-card-cta mt-auto" aria-disabled="true">Ver detalles</a></div></article></div>`;
 const card = (e) => `<div class="column is-6-tablet is-6-desktop is-4-widescreen"><article class="card event-card"><div class="card-content"><p class="panel-kicker">Evento</p><h2 class="panel-title">${esc(e.name)}</h2><div class="panel-meta"><p class="panel-meta-item"><span class="icon" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span><span>${esc(e.venue || "Lugar a confirmar")}</span></p><p class="panel-meta-item"><span class="icon" aria-hidden="true"><i class="fa-regular fa-calendar"></i></span><span>${fmtDate(e.eventDate)}</span></p></div><a class="button is-primary is-fullwidth event-card-cta mt-auto" href="/event.html?id=${e.id}">Ver detalles</a></div></article></div>`;
 
-// Consulta una pagina de eventos y actualiza la grilla y la paginacion.
 async function load(target = page) {
     grid.innerHTML = Array.from({ length: size }, skeleton).join("");
     paintPager(target, pages, true);

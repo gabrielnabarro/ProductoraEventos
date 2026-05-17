@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
     loginForm?.addEventListener("submit", submitLogin);
 });
 
-// Envia el formulario de login y guarda la sesion si la API responde bien.
 async function submitLogin(e) {
     e.preventDefault();
     loginSubmit.disabled = true;
@@ -23,14 +22,13 @@ async function submitLogin(e) {
         ticketixAuth.setSession(user);
         ticketixAuth.redirectAfterAuth("/");
     } catch (error) {
-        setLoginFeedback(resolveErrorMessage(error, "No se pudo iniciar sesion."), "is-danger is-light");
+        setLoginFeedback(resolveErrorMessage(error, "No se pudo iniciar sesión."), "is-danger is-light");
     }
 
     loginSubmit.disabled = false;
     loginSubmit.textContent = "Entrar";
 }
 
-// Muestra mensajes de error o estado dentro del formulario de login.
 function setLoginFeedback(message = "", type = "is-hidden") {
     loginFeedback.className = `notification ${type} mb-4`;
     loginFeedback.textContent = message;

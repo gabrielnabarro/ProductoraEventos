@@ -29,7 +29,7 @@ function showToast(message, type = "is-danger") {
         <div class="is-flex is-align-items-center">
             <span class="icon is-large mr-3 ${colorClass}"><i class="fa-solid ${icon} fa-2xl"></i></span>
             <div>
-                <p class="has-text-weight-bold mb-0">${type === 'is-danger' ? 'Atención' : 'Operación Exitosa'}</p>
+                <p class="has-text-weight-bold mb-0">${type === 'is-danger' ? 'Atención' : 'Pago confirmado'}</p>
                 <p class="mb-0">${esc(message)}</p>
             </div>
         </div>`;
@@ -75,11 +75,11 @@ async function loadReservation() {
 function renderSummary() {
     const r = state.reservation;
     el.summary.innerHTML = `
-        <p class="panel-kicker">Butaca Reservada</p>
+        <p class="panel-kicker">Butaca reservada</p>
         <p class="panel-seat">${esc(r.seatRowIdentifier)}${r.seatNumber}</p>
         <p class="panel-copy panel-copy-strong mb-3">Sector ${esc(r.sectorName)}</p>
         <div class="is-flex is-justify-content-space-between is-align-items-center pt-3 mt-3" style="border-top: 1px solid rgba(0,0,0,0.05);">
-            <span class="has-text-weight-bold has-text-grey" style="letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.85rem;">Total a Pagar</span>
+            <span class="has-text-weight-bold has-text-grey" style="letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.85rem;">Total a pagar</span>
             <span class="title is-4 mb-0 has-text-primary" style="font-family: 'Space Grotesk', sans-serif;">${fmtMoney(r.price)}</span>
         </div>`;
 }
@@ -111,7 +111,7 @@ function startTimer() {
             el.progress.classList.replace("is-primary", "is-danger");
             el.payBtn.disabled = true;
             
-            showToast("La reserva ya no esta disponible.");
+            showToast("La reserva ya no está disponible.");
             setTimeout(() => { location.href = el.cancelLink.href; }, 3500);
             return;
         }
@@ -168,7 +168,7 @@ async function handlePayment() {
         if (error.status === 409) {
             clearInterval(state.interval);
             el.payBtn.disabled = true;
-            showToast("Asiento ya no disponible. La reserva fue procesada por otro usuario o ha caducado.", "is-danger");
+            showToast("Butaca ya no disponible. La reserva fue procesada por otro usuario o ha caducado.", "is-danger");
             setTimeout(() => { location.href = el.cancelLink.href; }, 3500);
         } else {
 

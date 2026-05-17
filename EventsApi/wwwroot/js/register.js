@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
     registerForm?.addEventListener("submit", submitRegister);
 });
 
-// Envia el formulario de registro y crea la sesion del usuario nuevo.
 async function submitRegister(e) {
     e.preventDefault();
     registerSubmit.disabled = true;
@@ -30,7 +29,6 @@ async function submitRegister(e) {
     registerSubmit.textContent = "Crear cuenta";
 }
 
-// Muestra mensajes de error o estado dentro del formulario de registro.
 function setRegisterFeedback(message = "", type = "is-hidden") {
     registerFeedback.className = `notification ${type} mb-4`;
     registerFeedback.textContent = message;

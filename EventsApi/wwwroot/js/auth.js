@@ -1,14 +1,12 @@
-// Centraliza la sesion del usuario y la navegacion asociada al login.
 const ticketixAuth = (() => {
     const storageKey = "ticketix:session";
-    // Acepta solo redirecciones internas para evitar rutas invalidas.
+    // Acepta solo redirecciones internas para evitar rutas inválidas.
     const sanitizeRedirect = (value, fallback = "/") => value && value.startsWith("/") && !value.startsWith("//") ? value : fallback;
   
     const currentUrl = () => `${location.pathname}${location.search}`;
 
     const isAuthPage = () => location.pathname.endsWith("/login.html") || location.pathname.endsWith("/register.html");
 
-    // Lectura y validación de sesion guardada en localStorage
     const getSession = () => {
         try {
             const raw = localStorage.getItem(storageKey);
@@ -34,7 +32,6 @@ const ticketixAuth = (() => {
         renderAuthNav();
     };
 
-    // Redirecciones
     const getRedirectTarget = (fallback = "/") => sanitizeRedirect(new URLSearchParams(location.search).get("redirect"), fallback);
 
     const buildAuthUrl = (path, redirect = currentUrl()) => `${path}?redirect=${encodeURIComponent(sanitizeRedirect(redirect, "/"))}`;
@@ -49,14 +46,13 @@ const ticketixAuth = (() => {
         }
     };
 
-    // Renderiza la barra de navegación según el estado de sesión.
     function renderAuthNav() {
         const session = getSession();
         document.querySelectorAll("[data-auth-nav]").forEach((container) => {
             const authView = String(container.dataset.authView || "").toLowerCase();
             container.innerHTML = session
-                ? `<div class="auth-nav-group"><span class="auth-user-chip"><span class="icon" aria-hidden="true"><i class="fa-regular fa-user"></i></span><span>Hola, ${esc(session.name)}</span></span><button class="button topbar-link auth-nav-link auth-nav-link-danger" type="button" data-logout-button>Cerrar sesion</button></div>`
-                : `<div class="auth-nav-group"><a class="button topbar-link auth-nav-link${authView === "login" ? " auth-nav-link-current" : ""}" href="${buildAuthUrl("/login.html")}">Iniciar sesion</a><a class="button topbar-link auth-nav-link auth-nav-link-primary${authView === "register" ? " auth-nav-link-current" : ""}" href="${buildAuthUrl("/register.html")}">Crear usuario</a></div>`;
+                ? `<div class="auth-nav-group"><span class="auth-user-chip"><span class="icon" aria-hidden="true"><i class="fa-regular fa-user"></i></span><span>Hola, ${esc(session.name)}</span></span><button class="button topbar-link auth-nav-link auth-nav-link-danger" type="button" data-logout-button>Cerrar sesión</button></div>`
+                : `<div class="auth-nav-group"><a class="button topbar-link auth-nav-link${authView === "login" ? " auth-nav-link-current" : ""}" href="${buildAuthUrl("/login.html")}">Iniciar sesión</a><a class="button topbar-link auth-nav-link auth-nav-link-primary${authView === "register" ? " auth-nav-link-current" : ""}" href="${buildAuthUrl("/register.html")}">Crear usuario</a></div>`;
         });
 
         document.querySelectorAll("[data-logout-button]").forEach((button) => {
@@ -71,7 +67,6 @@ const ticketixAuth = (() => {
         });
     }
 
-    // Verifica si hay sesion; si no existe, envia al login.
     const requireAuth = (redirect = currentUrl()) => {
         if (getSession()) return true;
         redirectToLogin(redirect);
