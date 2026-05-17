@@ -190,3 +190,11 @@
 .timer-display { font-family: "Space Grotesk", sans-serif; font-size: clamp(3.5rem, 8vw, 4.5rem); font-weight: 700; color: var(--accent-strong); line-height: 1; letter-spacing: -0.04em; transition: color 0.3s ease; }
 .timer-danger { color: var(--danger-strong) !important; animation: pulseDanger 1.5s infinite; }
 @keyframes pulseDanger { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+.button.detail-pay-button:disabled {
+    background-color: #e0e0e0 !important;
+    border-color: #e0e0e0 !important;
+    color: #9e9e9e !important;
+    cursor: not-allowed !important;
+    pointer-events: auto !important;
+}
