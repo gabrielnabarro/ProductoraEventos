@@ -19,6 +19,12 @@ namespace Domain.Entities
             return SeatId == seatId;
         }
 
+        public bool CanExpire(DateTime now)
+        {
+            return string.Equals(Status, ReservationStatuses.Pending, StringComparison.OrdinalIgnoreCase)
+                && ExpiresAt <= now;
+        }
+
         public void Expire(DateTime timestamp)
         {
             Status = ReservationStatuses.Expired;
@@ -37,5 +43,18 @@ namespace Domain.Entities
                 ExpiresAt = expiresAt
             };
         }
+
+        public void Pay()
+        {
+            if (!string.Equals(Status, ReservationStatuses.Pending, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Solo una reserva pendiente puede marcarse como pagada.");
+            }
+
+            Status = ReservationStatuses.Paid;
+        }
+
+        public bool IsExpired(DateTime now) => now > ExpiresAt;
+
     }
 }

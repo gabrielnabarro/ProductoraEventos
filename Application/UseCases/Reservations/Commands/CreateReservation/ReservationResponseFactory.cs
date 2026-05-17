@@ -1,4 +1,5 @@
 using Application.DTOs;
+using Application.Common;
 using Domain.Entities;
 
 namespace Application.UseCases.Reservations.Commands.CreateReservation;
@@ -14,8 +15,8 @@ public sealed class ReservationResponseFactory
             UserId = reservation.UserId,
             SeatStatus = seatStatus,
             ReservationStatus = reservation.Status,
-            ReservedAt = reservation.ReservedAt,
-            ExpiresAt = reservation.ExpiresAt,
+            ReservedAt = UtcDateTime.Normalize(reservation.ReservedAt),
+            ExpiresAt = UtcDateTime.Normalize(reservation.ExpiresAt),
             Message = message
         };
     }

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ticketix | Completar Pago</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body class="ticketix-page">
+    <section class="section">
+        <div class="container is-fluid">
+            <header class="box topbar mb-5">
+                <div class="topbar-brand">
+                    <p class="title is-4 mb-0"><span class="icon has-text-primary mr-2"><i class="fa-solid fa-ticket"></i></span>Ticketix</p>
+                </div>
+                <div class="topbar-actions">
+                    <div class="auth-nav" data-auth-nav></div>
+                </div>
+            </header>
+
+            <div class="columns is-centered">
+                <div class="column is-5-desktop is-8-tablet">
+                    <div class="box detail-panel p-5">
+                        <p class="panel-kicker has-text-centered">Confirmación</p>
+                        <h1 class="panel-title has-text-centered panel-title-sm mb-5">Carrito de compras</h1>
+                        
+                        <div class="has-text-centered mb-5 pb-5" style="border-bottom: 1px solid var(--border);">
+                            <p class="heading">Tiempo restante para pagar</p>
+                            <div id="countdown-timer" class="timer-display">05:00</div>
+                            <progress id="timer-progress" class="progress is-primary is-small" value="100" max="100"></progress>
+                        </div>
+
+                        <div id="reservation-summary" class="detail-panel detail-panel-selection mb-5" aria-live="polite">
+                            <p class="has-text-centered py-4">Cargando reserva...</p>
+                        </div>
+
+                        <button id="pay-button" class="button is-primary is-fullwidth detail-pay-button is-medium" type="button" disabled>
+                            <span class="icon"><i class="fa-regular fa-credit-card"></i></span>
+                            <span>Pagar</span>
+                        </button>
+                        
+                        <div class="has-text-centered mt-4">
+                            <a id="cancel-link" href="/" class="has-text-grey is-size-7 has-text-weight-bold" style="text-transform: uppercase; letter-spacing: 0.1em;">Volver al evento</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="toast-container"></div>
+
+    <script src="/js/utils.js" defer></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/payment.js" defer></script>
+</body>
+</html>

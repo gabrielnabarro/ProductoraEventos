@@ -1,26 +1,38 @@
-const el = { title: $("#detail-title"), feedback: $("#detail-feedback"), summary: $("#event-summary"), choice: $("#selected-seat-summary"), pay: $("#payment-button"), map: $("#seat-map"), modal: $("#reserve-confirm-modal"), modalKicker: $("#reserve-confirm-kicker"), modalTitle: $("#reserve-confirm-title"), modalText: $("#reserve-confirm-text"), modalConfirm: $("#reserve-confirm-button"), modalCancel: $("#reserve-cancel-button") };
+const el = { title: $("#detail-title"), feedback: $("#detail-feedback"), summary: $("#event-summary"), choice: $("#selected-seat-summary"), pay: $("#payment-button"), timer: $("#reservation-countdown"), map: $("#seat-map"), modal: $("#reserve-confirm-modal"), modalKicker: $("#reserve-confirm-kicker"), modalTitle: $("#reserve-confirm-title"), modalText: $("#reserve-confirm-text"), modalConfirm: $("#reserve-confirm-button"), modalCancel: $("#reserve-cancel-button") };
 const headers = { headers: { Accept: "application/json" } };
 const seats = { Available: ["available", "fa-circle-check", "Disponible"], Reserved: ["reserved", "fa-hourglass-half", "Reservado"], Sold: ["sold", "fa-ban", "Vendido"] };
-const state = { id: Number(new URLSearchParams(location.search).get("id")), event: null, sectors: [], activeReservation: null, reserving: null, pendingSeatId: null };
+const state = { id: Number(new URLSearchParams(location.search).get("id")), event: null, sectors: [], activeReservation: null, reserving: null, pendingSeatId: null, expiredReservationToastId: null };
 
 document.addEventListener("DOMContentLoaded", () => {
     el.map.onclick = (e) => {
         const seat = e.target.closest("button[data-seat-id]");
         if (seat && !seat.disabled && !state.reserving) openReserveConfirm(seat.dataset.seatId);
     };
+
     el.modal.onclick = (e) => {
         if (e.target.dataset.closeModal === "true") closeReserveConfirm();
     };
+
     el.modalCancel.onclick = () => closeReserveConfirm();
+
     el.modalConfirm.onclick = () => {
         if (!state.pendingSeatId || state.reserving) return;
         const seatId = state.pendingSeatId;
         closeReserveConfirm();
         reserve(seatId);
     };
+
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && state.pendingSeatId) closeReserveConfirm();
     });
+
+    el.pay.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (state.id) {
+            window.location.assign(`/payment.html?eventId=${state.id}`);
+        }
+    });
+
     init();
 });
 
@@ -29,11 +41,24 @@ const userId = () => session()?.id || 0;
 const cloneSectors = (list) => list.map((s) => ({ ...s, seats: (s.seats || []).map((seat) => ({ ...seat })) }));
 const seatState = (status) => seats[status]?.[0] || "sold";
 const setFeedback = (msg = "", type = "is-hidden") => { el.feedback.className = `notification ${type} mb-5`; el.feedback.textContent = msg; };
+const showToast = (message, type = "is-danger", title = "Atención", timeout = 4000) => {
+    let toastC = document.getElementById("toast-container");
+    if (!toastC) {
+        toastC = document.createElement("div");
+        toastC.id = "toast-container";
+        document.body.appendChild(toastC);
+    }
+
+    toastC.innerHTML = `<div class="toast box ${type}"><div class="is-flex is-align-items-center"><span class="icon is-large has-text-danger mr-3"><i class="fa-solid fa-triangle-exclamation fa-2xl"></i></span><div><p class="has-text-weight-bold mb-0">${esc(title)}</p><p class="mb-0">${esc(message)}</p></div></div></div>`;
+    setTimeout(() => { if (toastC.firstChild) toastC.firstChild.remove(); }, timeout);
+};
 const getSeat = (id) => { for (const sector of state.sectors) { const seat = sector.seats.find((s) => String(s.id) === String(id)); if (seat) return { sector, seat }; } return null; };
 const reservationsUrl = () => `/api/v1/users/${userId()}/reservations?eventId=${state.id}&status=Pending`;
 const selectedSeatId = () => state.activeReservation?.seatId || null;
 const isReservationChange = (seatId) => !!state.activeReservation && String(state.activeReservation.seatId) !== String(seatId);
 const reservationSeatLabel = (reservation) => reservation ? `${reservation.seatRowIdentifier}${reservation.seatNumber}` : "";
+const reservationExpiresAt = (reservation) => reservation?.expiresAt ? new Date(reservation.expiresAt).getTime() : 0;
+const isReservationExpired = (reservation) => { const expiresAt = reservationExpiresAt(reservation); return !!expiresAt && expiresAt <= Date.now(); };
 const setActiveReservation = (reservations) => { state.activeReservation = Array.isArray(reservations) && reservations.length ? reservations[0] : null; };
 const setSeatStatus = (seatId, status) => { state.sectors.forEach((sector) => sector.seats.forEach((seat) => { if (String(seat.id) === String(seatId)) seat.status = status; })); };
 
@@ -71,18 +96,17 @@ function applyModalContent(seatId, hit) {
         const current = state.activeReservation;
         el.modalKicker.textContent = "Confirmar cambio";
         el.modalTitle.textContent = "Cambiar reserva";
-        el.modalText.textContent = `Vas a cambiar tu reserva de la butaca ${reservationSeatLabel(current)} a la butaca ${hit.seat.rowIdentifier}${hit.seat.seatNumber}. Se liberara tu reserva anterior del Sector ${current.sectorName} y se reservara la nueva en Sector ${hit.sector.name} - ${fmtMoney(hit.sector.price)}.`;
-        el.modalConfirm.textContent = "Si, cambiar";
+        el.modalText.textContent = `Vas a cambiar tu reserva de la butaca ${reservationSeatLabel(current)} a la butaca ${hit.seat.rowIdentifier}${hit.seat.seatNumber}. Se liberará tu reserva anterior del Sector ${current.sectorName} y se reservará la nueva en Sector ${hit.sector.name} - ${fmtMoney(hit.sector.price)}.`;
+        el.modalConfirm.textContent = "Sí, cambiar";
         return;
     }
 
     el.modalKicker.textContent = "Confirmar reserva";
     el.modalTitle.textContent = "Reservar butaca";
     el.modalText.textContent = `Vas a reservar la butaca ${hit.seat.rowIdentifier}${hit.seat.seatNumber}. Entrada Sector ${hit.sector.name} - ${fmtMoney(hit.sector.price)}.`;
-    el.modalConfirm.textContent = "Si, reservar";
+    el.modalConfirm.textContent = "Sí, reservar";
 }
 
-// Abre el modal de confirmacion antes de enviar la reserva al backend.
 function openReserveConfirm(seatId) {
     if (!ticketixAuth.requireAuth(`${location.pathname}${location.search}`)) return;
     const hit = getSeat(seatId);
@@ -110,23 +134,119 @@ function render() {
     renderMap();
 }
 
+let eventTimerInterval = null;
+let expirationRefreshInterval = null;
+
 function renderChoice(message = "") {
     const reservation = state.activeReservation;
     const logged = !!session();
-    el.pay.disabled = !reservation || !!message || !logged;
+    const expired = isReservationExpired(reservation);
+    el.pay.disabled = !reservation || !!message || !logged || expired;
     el.choice.className = `detail-panel detail-panel-selection${message ? " detail-panel-error" : ""}${reservation && !message ? " is-selected" : ""} mb-4`;
+
     el.choice.innerHTML = message
         ? `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">${esc(message)}</p>`
         : reservation
-            ? `<p class="panel-kicker">Tu reserva</p><p class="panel-seat">${esc(reservationSeatLabel(reservation))}</p><p class="panel-copy panel-copy-strong mb-2">Entrada Sector ${esc(reservation.sectorName)} - ${fmtMoney(reservation.price)}</p><p class="panel-copy mb-0">Puedes cambiar tu reserva seleccionando otra butaca disponible.</p>`
+            ? `<p class="panel-kicker">Tu reserva</p>
+               <p class="panel-seat">${esc(reservationSeatLabel(reservation))}</p>
+               <p class="panel-copy panel-copy-strong mb-0">Sector ${esc(reservation.sectorName)}</p>
+               <p class="panel-copy mb-2 mt-1">${fmtMoney(reservation.price)}</p>
+               <p class="panel-copy mb-0" style="font-size: 0.85rem;">Podés cambiar tu reserva seleccionando otra butaca.</p>`
             : logged
-                ? `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">No tienes una reserva pendiente. Selecciona una butaca disponible para reservar.</p>`
-                : `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">Inicia sesion para reservar una butaca y continuar al pago.</p>`;
+                ? `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">No tenés una reserva pendiente. Selecciona una butaca disponible para reservar.</p>`
+                : `<p class="panel-kicker">Tu reserva</p><p class="panel-copy mb-0">Inicia sesión para reservar una butaca y continuar al pago.</p>`;
+
+    if (reservation && !message && !expired) {
+        startEventTimer();
+    } else if (reservation && expired) {
+        renderExpiredTimer(false);
+    } else {
+        hideEventTimer();
+    }
+}
+
+function hideEventTimer() {
+    if (eventTimerInterval) clearInterval(eventTimerInterval);
+    eventTimerInterval = null;
+    stopExpirationRefreshPolling();
+    el.timer.className = "reservation-countdown is-hidden";
+    el.timer.innerHTML = "";
+}
+
+function stopExpirationRefreshPolling() {
+    if (expirationRefreshInterval) clearInterval(expirationRefreshInterval);
+    expirationRefreshInterval = null;
+}
+
+function startExpirationRefreshPolling() {
+    if (expirationRefreshInterval) return;
+
+    expirationRefreshInterval = setInterval(async () => {
+        try {
+            await refresh();
+
+            if (!state.activeReservation || !isReservationExpired(state.activeReservation)) {
+                stopExpirationRefreshPolling();
+            }
+        } catch {
+            setFeedback("La reserva expiró, pero no se pudo refrescar el mapa actualizado.", "is-warning is-light");
+        }
+    }, 5000);
+}
+
+function renderActiveTimer(value, danger = false) {
+    el.timer.className = `reservation-countdown${danger ? " is-danger" : ""}`;
+    el.timer.innerHTML = `<p class="timer-label">Carrito de compras - expira en</p><p class="timer-value">${esc(value)}</p>`;
+}
+
+function renderExpiredTimer(showNotification) {
+    if (eventTimerInterval) clearInterval(eventTimerInterval);
+    eventTimerInterval = null;
+    el.pay.disabled = true;
+    el.timer.className = "reservation-countdown is-expired";
+    el.timer.innerHTML = `<p class="timer-label">Carrito de compras</p><p class="timer-value">Reserva expirada</p><p class="timer-copy">La reserva ya no está disponible.</p>`;
+
+    const reservationId = state.activeReservation?.reservationId || state.activeReservation?.seatId || "current";
+    if (showNotification && state.expiredReservationToastId !== reservationId) {
+        state.expiredReservationToastId = reservationId;
+        showToast("La reserva ya no está disponible.");
+        refresh().catch(() => setFeedback("La reserva expiró, pero no se pudo refrescar el mapa actualizado.", "is-warning is-light"));
+    }
+
+    startExpirationRefreshPolling();
+}
+
+function startEventTimer() {
+    if (eventTimerInterval) clearInterval(eventTimerInterval);
+    stopExpirationRefreshPolling();
+
+    const reservation = state.activeReservation;
+    if (!reservation || !reservation.expiresAt) return;
+
+    const expiresAt = reservationExpiresAt(reservation);
+
+    const updateClock = () => {
+        const now = new Date().getTime();
+        const remaining = expiresAt - now;
+
+        if (remaining <= 0) {
+            renderExpiredTimer(true);
+            return;
+        }
+
+        const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((remaining % (1000 * 60)) / 1000);
+
+        renderActiveTimer(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`, remaining <= 30000);
+    };
+
+    updateClock();
+    eventTimerInterval = setInterval(updateClock, 1000);
 }
 
 function renderMap() {
     if (!state.sectors.length) {
-        el.map.innerHTML = '<div class="notification is-light has-text-centered">Todavia no hay un mapa de butacas disponible para este evento.</div>';
+        el.map.innerHTML = '<div class="notification is-light has-text-centered">Todavía no hay un mapa de butacas disponible para este evento.</div>';
         return;
     }
     el.map.innerHTML = state.sectors.map((sector) => `<section class="box mb-4"><header class="is-flex is-justify-content-space-between is-align-items-center mb-4 is-flex-wrap-wrap"><h3 class="title is-5 mb-0">${esc(sector.name)}</h3><span class="tag is-primary is-light is-medium">${fmtMoney(sector.price)}</span></header><div class="seats-grid">${rows(sector.seats).map((row) => `<div class="seat-row"><div class="row-seats"><div class="seat-cluster">${row.map(seatButton).join("")}</div></div></div>`).join("")}</div></section>`).join("");
@@ -139,9 +259,8 @@ function seatButton(seat) {
     return `<button class="seat-chip ${kind}${selected ? " is-selected" : ""}${reserving ? " is-reserving" : ""}" type="button" data-seat-id="${seat.id}" title="${label}" aria-label="Butaca ${esc(seat.rowIdentifier)}${seat.seatNumber} - ${label}" ${kind !== "available" || reserving ? "disabled" : ""}><i class="fa-solid ${icon}"></i><span class="seat-code">${esc(seat.rowIdentifier)}${seat.seatNumber}</span></button>`;
 }
 
-// Carga el evento y su mapa de butacas al abrir la pantalla.
 async function init() {
-    if (!state.id) return fail("El identificador del evento no es valido.");
+    if (!state.id) return fail("El identificador del evento no es válido.");
     try {
         const [event, map, reservationSnapshot] = await Promise.all([fetchJson(`/api/v1/events/${state.id}`, headers), fetchJson(`/api/v1/events/${state.id}/seats`, headers), fetchReservationSnapshot()]);
         state.event = event;
@@ -154,7 +273,6 @@ async function init() {
     } catch (e) { fail(resolveErrorMessage(e, "No se pudo obtener el detalle del evento.")); }
 }
 
-// Vuelve a consultar el mapa cuando una reserva cambia el estado de las butacas.
 async function refresh() {
     const [map, reservationSnapshot] = await Promise.all([fetchJson(`/api/v1/events/${state.id}/seats`, headers), fetchReservationSnapshot()]);
     state.sectors = cloneSectors(map.sectors || []);
@@ -165,7 +283,6 @@ async function refresh() {
         : setFeedback();
 }
 
-// Envia la reserva al backend y actualiza la interfaz con el resultado.
 async function reserve(seatId) {
     closeReserveConfirm();
     if (!userId()) return;
@@ -176,7 +293,7 @@ async function reserve(seatId) {
             const [map, reservations] = await Promise.all([fetchJson(`/api/v1/events/${state.id}/seats`, headers), fetchJson(reservationsUrl(), headers)]);
             state.sectors = cloneSectors(map.sectors || []);
             setActiveReservation(reservations);
-            if (!state.activeReservation) throw new Error("No se encontro la reserva actual del usuario.");
+            if (!state.activeReservation) throw new Error("No se encontró la reserva actual del usuario.");
             setFeedback();
         } catch {
             if (state.activeReservation && String(state.activeReservation.seatId) !== String(seatId)) {
@@ -185,16 +302,23 @@ async function reserve(seatId) {
             setSeatStatus(seatId, data.seatStatus || "Reserved");
             state.activeReservation = buildReservationFallback(seatId, data);
             render();
-            setFeedback("La reserva se realizo, pero no se pudo recargar el mapa actualizado.", "is-warning is-light");
+            setFeedback("La reserva se realizó, pero no se pudo recargar el mapa actualizado.", "is-warning is-light");
         }
     } catch (e) {
-        if (e.status === 409) await refresh().catch(() => {});
-        setFeedback(resolveErrorMessage(e, "No se pudo reservar la butaca."), "is-danger is-light");
+        if (e.status === 409) {
+            const refreshed = await refresh().then(() => true).catch(() => false);
+            if (!refreshed) {
+                setFeedback("Butaca ya no disponible. No se pudo refrescar el mapa actualizado.", "is-warning is-light");
+            }
+            showToast("Butaca ya no disponible");
+
+        } else {
+            setFeedback(resolveErrorMessage(e, "No se pudo reservar la butaca."), "is-danger is-light");
+        }
     }
     state.reserving = null; render();
 }
 
-// Muestra un estado de error cuando no se puede abrir el detalle del evento.
 function fail(message) {
     el.title.textContent = "Detalle no disponible";
     el.summary.innerHTML = `<article class="detail-panel detail-panel-error mb-4"><p class="panel-kicker">Error</p><h3 class="panel-title panel-title-sm">No se pudo abrir este evento</h3><p class="panel-copy mb-0">${esc(message)}</p><a class="button is-primary is-fullwidth detail-pay-button mt-4" href="/">Volver a la cartelera</a></article>`;

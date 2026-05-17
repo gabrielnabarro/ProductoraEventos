@@ -1,7 +1,6 @@
 using Application.Interfaces;
 using Domain.Constants;
 using Domain.Entities;
-using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence.Repositories;
@@ -42,8 +41,26 @@ public sealed class ReservationRepository : IReservationRepository
             .ToArrayAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<Reservation>> GetExpiredPendingAsync(DateTime now, int batchSize, CancellationToken cancellationToken = default)
+    {
+        return await _context.RESERVATION
+            .Include(reservation => reservation.Seat)
+            .Where(reservation => reservation.Status == ReservationStatuses.Pending && reservation.ExpiresAt <= now)
+            .OrderBy(reservation => reservation.ExpiresAt)
+            .ThenBy(reservation => reservation.Id)
+            .Take(batchSize)
+            .ToArrayAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<Reservation>> GetPendingByUserAndEventAsync(int userId, int eventId, CancellationToken cancellationToken = default)
     {
         return await GetByUserAsync(userId, eventId, ReservationStatuses.Pending, cancellationToken);
+    }
+
+    public Task<Reservation?> GetByIdAsync(Guid reservationId, CancellationToken cancellationToken = default)
+    {
+        return _context.RESERVATION
+            .Include(reservation => reservation.Seat)
+            .FirstOrDefaultAsync(reservation => reservation.Id == reservationId, cancellationToken);
     }
 }

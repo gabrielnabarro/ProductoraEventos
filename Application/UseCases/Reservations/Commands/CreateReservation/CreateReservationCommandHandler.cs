@@ -48,6 +48,7 @@ public sealed class CreateReservationCommandHandler : ICreateReservationCommandH
         await _auditLogRepository.AddAsync(
             _reservationAuditLogFactory.CreateAttempt(command.UserId, command.SeatId, userExists, attemptTimestamp),
             cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         if (!userExists)
         {
@@ -56,30 +57,29 @@ public sealed class CreateReservationCommandHandler : ICreateReservationCommandH
             throw new NotFoundException("Usuario no encontrado.");
         }
 
-        var seat = await _seatRepository.GetByIdAsync(command.SeatId, cancellationToken);
-
-        if (seat is null)
-        {
-            await RejectReservationAsync(command.UserId, command.SeatId, "Butaca no encontrada.", cancellationToken);
-
-            throw new NotFoundException("Butaca no encontrada.");
-        }
-
-        if (seat.Sector is null)
-        {
-            await RejectReservationAsync(command.UserId, command.SeatId, "La butaca no tiene un evento asociado.", cancellationToken);
-
-            throw new ValidationException("La butaca no pertenece a un evento valido.");
-        }
-
-        var existingReservations = await _reservationRepository.GetPendingByUserAndEventAsync(command.UserId, seat.Sector.EventId, cancellationToken);
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
+            var seat = await _seatRepository.GetByIdAsync(command.SeatId, cancellationToken);
+
+            if (seat is null)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                await RejectReservationAsync(command.UserId, command.SeatId, "Butaca no encontrada.", cancellationToken);
+
+                throw new NotFoundException("Butaca no encontrada.");
+            }
+
+            if (seat.Sector is null)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                await RejectReservationAsync(command.UserId, command.SeatId, "La butaca no tiene un evento asociado.", cancellationToken);
+
+                throw new ValidationException("La butaca no pertenece a un evento valido.");
+            }
+
+            var existingReservations = await _reservationRepository.GetPendingByUserAndEventAsync(command.UserId, seat.Sector.EventId, cancellationToken);
             var selectionResult = _reservationSelectionPolicy.Apply(seat, existingReservations, command.UserId, DateTime.UtcNow);
 
             if (selectionResult.CreatedReservation)
@@ -98,10 +98,10 @@ public sealed class CreateReservationCommandHandler : ICreateReservationCommandH
                 seat.Status,
                 _reservationMessageFactory.CreateSuccessResponseMessage(selectionResult));
         }
-        catch (ConflictException)
+        catch (ConflictException exception)
         {
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            await RejectReservationAsync(command.UserId, command.SeatId, $"El estado de la butaca es {seat.Status}.", cancellationToken);
+            await RejectReservationAsync(command.UserId, command.SeatId, exception.Message, cancellationToken);
             throw;
         }
         catch

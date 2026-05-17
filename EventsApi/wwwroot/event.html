@@ -17,7 +17,7 @@
             <header class="box topbar mb-5">
                 <div class="topbar-brand">
                     <p class="title is-4 mb-0"><span class="icon has-text-primary mr-2"><i class="fa-solid fa-ticket"></i></span>Ticketix</p>
-                    <aside class="menu topbar-menu" aria-label="Navegacion principal">
+                    <aside class="menu topbar-menu" aria-label="Navegación principal">
                         <ul class="menu-list">
                             <li><a class="topbar-link is-active" href="/"><span class="icon" aria-hidden="true"><i class="fa-solid fa-arrow-left"></i></span><span>Volver a la cartelera</span></a></li>
                         </ul>
@@ -36,7 +36,7 @@
                 <div class="columns is-variable is-5 detail-content">
                     <div class="column is-8-desktop">
                         <div class="box">
-                            <h2 class="title is-4 has-text-weight-bold mb-4">Mapa visual de butacas</h2>
+                            <h2 class="title is-4 has-text-weight-bold mb-4">Seleccioná tu butaca</h2>
                             <div class="tags mb-5">
                                 <span class="tag is-success is-light is-medium"><span class="icon"><i class="fa-solid fa-circle-check"></i></span><span>Disponible</span></span>
                                 <span class="tag is-warning is-light is-medium"><span class="icon"><i class="fa-solid fa-hourglass-half"></i></span><span>Reservado</span></span>
@@ -59,11 +59,16 @@
                                 <p class="panel-kicker">Tu reserva</p>
                                 <p class="panel-copy mb-0">Selecciona una butaca disponible para continuar al pago.</p>
                             </div>
+                            <div class="has-text-centered mb-4">
+                                <p class="has-text-weight-bold is-size-5 has-text-grey mb-2">MEDIOS DE PAGO HABILITADOS</p>
+                                <img src="https://s3-sa-east-1.amazonaws.com/eb-core-livepass-com-ar-uploads/uploads%2F1760561037847-mercado+pago+%281%29.png" class="fr-dii fr-draggable" style="width: 50%; max-width: 250px;">
+                            </div>
                             <button id="payment-button" class="button is-primary is-fullwidth detail-pay-button" type="button" aria-label="Continuar al pago" disabled>Continuar al pago</button>
+                            <div id="reservation-countdown" class="reservation-countdown is-hidden" aria-live="polite"></div>
                         </div>
                     </aside>
-                </div>
-            </section>
+                 </div>
+             </section>
         </div>
     </section>
 
@@ -77,7 +82,7 @@
             </section>
             <footer class="reserve-modal-actions">
                 <button id="reserve-cancel-button" class="button reserve-modal-cancel" type="button">No</button>
-                <button id="reserve-confirm-button" class="button is-primary detail-pay-button" type="button">Si, reservar</button>
+                <button id="reserve-confirm-button" class="button is-primary detail-pay-button" type="button">Sí, reservar</button>
             </footer>
         </div>
     </div>

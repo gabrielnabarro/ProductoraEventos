@@ -1,5 +1,4 @@
 @EventsApi_HostAddress = http://localhost:7026
-//@EventsApi_HostAddress = http://localhost:5269
 @eventId = 1
 @seatId = 00000000-0000-0000-0000-000000000000
 @userId = 1

@@ -1,17 +1,20 @@
+using Application.DTOs;
+using Application.Interfaces;
 using Application.UseCases.Audits.Queries.GetAllAudits;
 using Application.UseCases.Auth.Commands.Login;
 using Application.UseCases.Auth.Commands.Register;
-using Application.DTOs;
-using Infrastructure.Persistence;
-using Infrastructure.Persistence.Repositories;
-using Infrastructure.Security;
-using Application.Interfaces;
 using Application.UseCases.Events.Queries.GetAllEvents;
 using Application.UseCases.Events.Queries.GetEventById;
 using Application.UseCases.Events.Queries.GetEventSeatMap;
+using Application.UseCases.Payments.Commands.ConfirmPayment;
 using Application.UseCases.Reservations.Commands.CreateReservation;
+using Application.UseCases.Reservations.Commands.ExpirePendingReservations;
 using Application.UseCases.Reservations.Queries.GetUserReservations;
+using EventsApi.BackgroundJobs;
 using EventsApi.Middlewares;
+using Infrastructure.Persistence;
+using Infrastructure.Persistence.Repositories;
+using Infrastructure.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,6 +43,8 @@ builder.Services.AddControllers()
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.Configure<ReservationExpirationJobOptions>(
+    builder.Configuration.GetSection(ReservationExpirationJobOptions.SectionName));
 
 var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -63,9 +68,12 @@ builder.Services.AddScoped<ReservationAuditLogFactory>();
 builder.Services.AddScoped<ReservationMessageFactory>();
 builder.Services.AddScoped<ReservationResponseFactory>();
 builder.Services.AddScoped<ICreateReservationCommandHandler, CreateReservationCommandHandler>();
+builder.Services.AddScoped<IExpirePendingReservationsCommandHandler, ExpirePendingReservationsCommandHandler>();
 builder.Services.AddScoped<IGetUserReservationsQueryHandler, GetUserReservationsQueryHandler>();
 builder.Services.AddScoped<IRegisterCommandHandler, RegisterCommandHandler>();
 builder.Services.AddScoped<ILoginCommandHandler, LoginCommandHandler>();
+builder.Services.AddHostedService<ExpirePendingReservationsHostedService>();
+builder.Services.AddScoped<IConfirmPaymentCommandHandler, ConfirmPaymentCommandHandler>();
 
 var app = builder.Build();
 

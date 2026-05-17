@@ -1,4 +1,5 @@
 using Application.DTOs;
+using Application.Common;
 using Application.Interfaces;
 using Domain.Constants;
 using Domain.Exceptions;
@@ -75,8 +76,8 @@ public sealed class GetUserReservationsQueryHandler : IGetUserReservationsQueryH
             SeatRowIdentifier = seat.RowIdentifier,
             SeatNumber = seat.SeatNumber,
             ReservationStatus = reservation.Status,
-            ReservedAt = reservation.ReservedAt,
-            ExpiresAt = reservation.ExpiresAt
+            ReservedAt = UtcDateTime.Normalize(reservation.ReservedAt),
+            ExpiresAt = UtcDateTime.Normalize(reservation.ExpiresAt)
         };
     }
 }
